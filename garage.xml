@@ -3,7 +3,7 @@
   <Name>garage</Name>
   <Repository>dxflrs/garage:v2.3.0</Repository>
   <Registry>https://hub.docker.com/r/dxflrs/garage</Registry>
-  <Network>milvus-net</Network>
+  <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
@@ -25,7 +25,7 @@
   <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/garage.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/garage.png</Icon>
-  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=milvus-net</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled/>

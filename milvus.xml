@@ -3,7 +3,7 @@
   <Name>milvus</Name>
   <Repository>milvusdb/milvus:v2.6.15</Repository>
   <Registry>https://hub.docker.com/r/milvusdb/milvus</Registry>
-  <Network>milvus-net</Network>
+  <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
@@ -26,7 +26,7 @@
   <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/milvus.png</Icon>
-  <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined --network=milvus-net</ExtraParams>
   <PostArgs>milvus run standalone</PostArgs>
   <CPUset/>
   <DateInstalled/>
