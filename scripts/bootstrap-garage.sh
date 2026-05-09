@@ -17,6 +17,18 @@ for i in {1..30}; do
     sleep 1
 done
 
+# Garage v2 requires an explicit cluster layout before bucket ops, even on a single node.
+# If no layout is applied yet, stage + apply one now. Idempotent: skips if already done.
+if ! docker exec "$CONTAINER" /garage bucket list >/dev/null 2>&1; then
+    echo "==> Layout not ready — staging a single-node layout"
+    NODE_ID=$(docker exec "$CONTAINER" /garage node id -q | cut -d'@' -f1)
+    if [ -z "$NODE_ID" ]; then
+        echo "    ERROR: could not read node id"; exit 1
+    fi
+    docker exec "$CONTAINER" /garage layout assign -z dc1 -c 1G "$NODE_ID"
+    docker exec "$CONTAINER" /garage layout apply --version 1
+fi
+
 echo "==> Creating bucket: $BUCKET"
 docker exec "$CONTAINER" /garage bucket create "$BUCKET" || echo "   (already exists)"
 
