@@ -44,11 +44,15 @@ Runs the [zilliztech/memsearch](https://github.com/zilliztech/memsearch) server-
    cp config-examples/garage.toml    /mnt/cache/appdata/garage/garage.toml
    cp config-examples/milvus.yaml    /mnt/cache/appdata/milvus/configs/milvus.yaml
    ```
-   Then edit `garage.toml` to replace the `REPLACE_WITH_OPENSSL_RAND_HEX_32` placeholders with real secrets:
+   Then edit `garage.toml` to replace the `REPLACE_WITH_OPENSSL_RAND_HEX_32` placeholders with real secrets. **The values must stay wrapped in double quotes** (TOML strings). Example:
    ```
    openssl rand -hex 32   # rpc_secret
    openssl rand -hex 32   # admin_token
    openssl rand -hex 32   # metrics_token (optional)
+   ```
+   Each result is a bare 64-char hex string; paste it *inside* the existing quotes in the file:
+   ```
+   rpc_secret = "80e66717ef4593c5d3f8adba9d36d2c17584b4177cca399706c888b45cd96e02"
    ```
 
 #### Install order
