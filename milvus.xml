@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://milvus.io</Project>
-  <Overview>Milvus Standalone — open-source vector database. Backs the `memsearch` Claude Code plugin.&#xD;&#xD;Prerequisites before install:&#xD;1. Shared bridge network exists: `docker network create milvus-net`.&#xD;2. Garage is running and a bucket + access key have been created (see repo README).&#xD;3. milvus-etcd is running on the same network.&#xD;4. `milvus.yaml` exists at `/mnt/cache/appdata/milvus/configs/milvus.yaml` (starter in repo under config-examples/).&#xD;&#xD;Autostart order: Garage (1) → etcd (2) → Milvus (3) with ~10s delays between.&#xD;&#xD;After install: confirm health via `curl http://[UNRAID-IP]:9091/healthz`.</Overview>
+  <Overview>[b]Milvus Standalone[/b] — open-source vector database. Backs the [i]memsearch[/i] Claude Code plugin.[br][br][b]Prerequisites before install:[/b][br]1. Shared bridge network exists: [i]docker network create milvus-net[/i][br]2. Garage is running and a bucket + access key have been created (see repo README)[br]3. milvus-etcd is running on the same network[br]4. [i]milvus.yaml[/i] exists at [i]/mnt/cache/appdata/milvus/configs/milvus.yaml[/i] (starter in repo under config-examples/)[br][br][b]Autostart order:[/b] Garage (1) → etcd (2) → Milvus (3) with ~10s delays between.[br][br][b]After install:[/b] confirm health via [i]curl http://[UNRAID-IP]:9091/healthz[/i]</Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus.xml</TemplateURL>
