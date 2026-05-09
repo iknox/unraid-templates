@@ -1,0 +1,34 @@
+# Milvus Standalone config — only the keys that differ from defaults.
+# Full reference: https://github.com/milvus-io/milvus/blob/v2.6.15/configs/milvus.yaml
+
+etcd:
+  endpoints:
+    - milvus-etcd:2379
+  rootPath: by-dev
+  metaSubPath: meta
+  kvSubPath: kv
+
+minio:
+  # Garage service on the shared milvus-net bridge.
+  address: garage
+  port: 3900
+  # Paste the values from `garage key info milvus-key` after bootstrap.
+  accessKeyID: REPLACE_WITH_GARAGE_ACCESS_KEY
+  secretAccessKey: REPLACE_WITH_GARAGE_SECRET_KEY
+  useSSL: false
+  # Bucket created via `garage bucket create milvus`.
+  bucketName: milvus
+  rootPath: files
+  # Garage supports path-style; virtual-host requires wildcard DNS we don't have.
+  useVirtualHost: false
+  # Must match `s3_region` in garage.toml. SigV4 will reject mismatches with
+  # AuthorizationHeaderMalformed if these disagree.
+  region: garage
+  cloudProvider: aws
+  useIAM: false
+
+common:
+  storageType: remote
+
+log:
+  level: info

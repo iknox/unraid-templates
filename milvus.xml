@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>milvus</Name>
+  <Repository>milvusdb/milvus:v2.6.15</Repository>
+  <Registry>https://hub.docker.com/r/milvusdb/milvus</Registry>
+  <Network>milvus-net</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://milvus.io</Project>
+  <Overview>Milvus Standalone — open-source vector database. Backs the `memsearch` Claude Code plugin.&#xD;&#xD;Prerequisites before install:&#xD;1. Shared bridge network exists: `docker network create milvus-net`.&#xD;2. Garage is running and a bucket + access key have been created (see repo README).&#xD;3. milvus-etcd is running on the same network.&#xD;4. `milvus.yaml` exists at `/mnt/cache/appdata/milvus/configs/milvus.yaml` (starter in repo under config-examples/).&#xD;&#xD;Autostart order: Garage (1) → etcd (2) → Milvus (3) with ~10s delays between.&#xD;&#xD;After install: confirm health via `curl http://[UNRAID-IP]:9091/healthz`.</Overview>
+  <Category>HomeLab: Memsearch:</Category>
+  <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/milvus.png</Icon>
+  <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined</ExtraParams>
+  <PostArgs>milvus run standalone</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Milvus is a cloud-native, open-source vector database built to power embedding similarity search. This template runs Milvus Standalone (single-node) pointed at Garage for object storage and etcd for coordination.</Description>
+  <Config Name="gRPC API" Target="19530" Default="19530" Mode="tcp" Description="Milvus gRPC API — pymilvus clients and memsearch connect here." Type="Port" Display="always" Required="true" Mask="false">19530</Config>
+  <Config Name="Health / Metrics" Target="9091" Default="9091" Mode="tcp" Description="HTTP health endpoint (/healthz) and Prometheus metrics (/metrics)." Type="Port" Display="always" Required="true" Mask="false">9091</Config>
+  <Config Name="Data" Target="/var/lib/milvus" Default="/mnt/cache/appdata/milvus/data" Mode="rw" Description="Milvus local data (logs, WAL, staging). Cache pool only." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/data</Config>
+  <Config Name="Config" Target="/milvus/configs/milvus.yaml" Default="/mnt/cache/appdata/milvus/configs/milvus.yaml" Mode="ro" Description="milvus.yaml — starter at config-examples/milvus.yaml in the template repo. Set minio.accessKeyID + secretAccessKey + bucketName to match Garage." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/configs/milvus.yaml</Config>
+  <Config Name="ETCD_ENDPOINTS" Target="ETCD_ENDPOINTS" Default="milvus-etcd:2379" Description="Container name of the etcd instance on milvus-net (default works with milvus-etcd template)." Type="Variable" Display="advanced" Required="true" Mask="false">milvus-etcd:2379</Config>
+  <Config Name="MINIO_ADDRESS" Target="MINIO_ADDRESS" Default="garage:3900" Description="Object-store address. For Garage, use `garage:3900`. Milvus uses the `minio` config section for any S3-compatible backend." Type="Variable" Display="advanced" Required="true" Mask="false">garage:3900</Config>
+  <Config Name="COMMON_STORAGETYPE" Target="COMMON_STORAGETYPE" Default="remote" Description="Remote object storage (vs local fs)." Type="Variable" Display="advanced" Required="true" Mask="false">remote</Config>
+</Container>

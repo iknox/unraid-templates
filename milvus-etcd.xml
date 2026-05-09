@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>milvus-etcd</Name>
+  <Repository>quay.io/coreos/etcd:v3.5.25</Repository>
+  <Registry>https://quay.io/repository/coreos/etcd</Registry>
+  <Network>milvus-net</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://etcd.io</Project>
+  <Overview>etcd v3 used as metadata/coordination store for Milvus Standalone.&#xD;&#xD;Not a standalone app — install Garage first, then this, then Milvus. Autostart order: Garage (1) → etcd (2) → Milvus (3) with ~10s delays. No ports need to be published to the host; Milvus reaches etcd at `milvus-etcd:2379` over the `milvus-net` network.&#xD;&#xD;Data dir MUST be on cache/NVMe — etcd is sensitive to slow disks and FUSE fsync semantics.</Overview>
+  <Category>HomeLab: Memsearch:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus-etcd.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/etcd.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs>etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>etcd is a distributed reliable key-value store. Milvus Standalone uses it for metadata and leader election.</Description>
+  <Config Name="Data" Target="/etcd" Default="/mnt/cache/appdata/milvus/etcd" Mode="rw" Description="etcd data dir. Cache pool only — never /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/etcd</Config>
+  <Config Name="ETCD_AUTO_COMPACTION_MODE" Target="ETCD_AUTO_COMPACTION_MODE" Default="revision" Description="Auto-compaction mode (keeps the data dir from growing unbounded)." Type="Variable" Display="advanced" Required="true" Mask="false">revision</Config>
+  <Config Name="ETCD_AUTO_COMPACTION_RETENTION" Target="ETCD_AUTO_COMPACTION_RETENTION" Default="1000" Description="Keep this many revisions before compacting." Type="Variable" Display="advanced" Required="true" Mask="false">1000</Config>
+  <Config Name="ETCD_QUOTA_BACKEND_BYTES" Target="ETCD_QUOTA_BACKEND_BYTES" Default="4294967296" Description="Backend quota in bytes (4 GiB). Raise if Milvus reports etcd full." Type="Variable" Display="advanced" Required="true" Mask="false">4294967296</Config>
+  <Config Name="ETCD_SNAPSHOT_COUNT" Target="ETCD_SNAPSHOT_COUNT" Default="50000" Description="Snapshot every N transactions." Type="Variable" Display="advanced" Required="true" Mask="false">50000</Config>
+</Container>

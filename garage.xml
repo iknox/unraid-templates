@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>garage</Name>
+  <Repository>dxflrs/garage:v2.3.0</Repository>
+  <Registry>https://hub.docker.com/r/dxflrs/garage</Registry>
+  <Network>milvus-net</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://garagehq.deuxfleurs.fr/</Project>
+  <Overview>Garage: S3-compatible distributed object storage, used here as the backing store for Milvus (replacing MinIO).&#xD;&#xD;Before first install: create the shared bridge network with `docker network create milvus-net` on the Unraid host. Also create `/mnt/cache/appdata/garage/{meta,data}` and drop a `garage.toml` at `/mnt/cache/appdata/garage/garage.toml` (starter in repo under config-examples/).&#xD;&#xD;After first start: `docker exec garage /garage status` to confirm healthy, then run the bootstrap script to create the Milvus bucket + access key (see repo README).</Overview>
+  <Category>HomeLab: Memsearch:</Category>
+  <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/garage.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/garage.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Garage is a lightweight, efficient, S3-compatible object store designed for geo-distributed deployment. On Unraid it runs as a single-node replacement for MinIO and backs the Milvus vector database.</Description>
+  <Config Name="S3 API" Target="3900" Default="3900" Mode="tcp" Description="S3-compatible HTTP API (the port Milvus talks to). Expose to LAN only if you want external S3 clients." Type="Port" Display="always" Required="true" Mask="false">3900</Config>
+  <Config Name="Admin API" Target="3903" Default="3903" Mode="tcp" Description="Admin HTTP API — health checks and metrics. Exposing to LAN is optional." Type="Port" Display="advanced" Required="false" Mask="false">3903</Config>
+  <Config Name="RPC" Target="3901" Default="" Mode="tcp" Description="Cluster RPC port. Not needed for single-node deploys; leave unset." Type="Port" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Metadata" Target="/var/lib/garage/meta" Default="/mnt/cache/appdata/garage/meta" Mode="rw" Description="Metadata dir (LMDB/sqlite). MUST live on SSD / cache pool — never on /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/meta</Config>
+  <Config Name="Data" Target="/var/lib/garage/data" Default="/mnt/cache/appdata/garage/data" Mode="rw" Description="Bulk data dir. Can live on the array for cheap storage; cache pool is fine too." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/data</Config>
+  <Config Name="Config File" Target="/etc/garage.toml" Default="/mnt/cache/appdata/garage/garage.toml" Mode="ro" Description="Path on host to garage.toml. See config-examples/garage.toml in the template repo for a starter." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/garage.toml</Config>
+</Container>
