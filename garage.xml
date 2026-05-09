@@ -11,15 +11,15 @@
   <Project>https://garagehq.deuxfleurs.fr/</Project>
   <Overview>
     [b]Garage[/b]: S3-compatible distributed object storage, used here as the backing store for Milvus (replacing MinIO).&#xD;
-    [br][br]&#xD;
+    [br]&#xD;
     [b]Before first install:[/b]&#xD;
-    [br]- Create the shared bridge network on the Unraid host: [i]docker network create milvus-net[/i]&#xD;
-    [br]- Create appdata dirs: [i]/mnt/cache/appdata/garage/meta[/i] and [i]/mnt/cache/appdata/garage/data[/i]&#xD;
-    [br]- Drop a [i]garage.toml[/i] at [i]/mnt/cache/appdata/garage/garage.toml[/i] (starter in repo under config-examples/)&#xD;
-    [br][br]&#xD;
+    - Create the shared bridge network on the Unraid host: [i]docker network create milvus-net[/i]&#xD;
+    - Create appdata dirs: [i]/mnt/cache/appdata/garage/meta[/i] and [i]/mnt/cache/appdata/garage/data[/i]&#xD;
+    - Drop a [i]garage.toml[/i] at [i]/mnt/cache/appdata/garage/garage.toml[/i] (starter in repo under config-examples/)&#xD;
+    [br]&#xD;
     [b]After first start:[/b]&#xD;
-    [br]- [i]docker exec garage /garage status[/i] to confirm healthy&#xD;
-    [br]- Run the bootstrap script to create the Milvus bucket + access key (see repo README)
+    - [i]docker exec garage /garage status[/i] to confirm healthy&#xD;
+    - Run the bootstrap script to create the Milvus bucket + access key (see repo README)
   </Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
