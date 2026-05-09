@@ -9,7 +9,17 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://etcd.io</Project>
-  <Overview>[b]etcd v3[/b] used as metadata/coordination store for Milvus Standalone.[br][br][b]Not a standalone app[/b] — install Garage first, then this, then Milvus.[br][br][b]Autostart order:[/b] Garage (1) → etcd (2) → Milvus (3) with ~10s delays.[br][br]No ports need to be published to the host; Milvus reaches etcd at [i]milvus-etcd:2379[/i] over the [i]milvus-net[/i] network.[br][br][b]Data dir MUST be on cache/NVMe[/b] — etcd is sensitive to slow disks and FUSE fsync semantics.</Overview>
+  <Overview>
+    [b]etcd v3[/b] used as metadata/coordination store for Milvus Standalone.&#xD;
+    [br][br]&#xD;
+    [b]Not a standalone app[/b] — install Garage first, then this, then Milvus.&#xD;
+    [br][br]&#xD;
+    [b]Autostart order:[/b] Garage (1) → etcd (2) → Milvus (3) with ~10s delays.&#xD;
+    [br][br]&#xD;
+    No ports need to be published to the host; Milvus reaches etcd at [i]milvus-etcd:2379[/i] over the [i]milvus-net[/i] network.&#xD;
+    [br][br]&#xD;
+    [b]Data dir MUST be on cache/NVMe[/b] — etcd is sensitive to slow disks and FUSE fsync semantics.
+  </Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus-etcd.xml</TemplateURL>
