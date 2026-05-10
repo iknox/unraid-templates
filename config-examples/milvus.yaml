@@ -1,5 +1,5 @@
 # Milvus Standalone config — only the keys that differ from defaults.
-# Full reference: https://github.com/milvus-io/milvus/blob/v2.6.15/configs/milvus.yaml
+# Full reference: https://github.com/milvus-io/milvus/blob/v2.5.27/configs/milvus.yaml
 
 etcd:
   endpoints:
@@ -32,17 +32,3 @@ common:
 
 log:
   level: info
-
-# Milvus Standalone defaults the message queue to rocksmq. If a prior
-# fresh run ever recorded kafka into etcd (seen on some 2.6.x images),
-# Milvus refuses to bind ports cleanly on restart. Pin it explicitly.
-mq:
-  type: rocksmq
-
-# Pin the internal service ports so etcd-level overrides (if any stale
-# keys exist) can't steal 19530 from Proxy. MixCoord MUST be 22125 on
-# 2.6.x — see milvus issue #45629.
-proxy:
-  port: 19530
-rootCoord:
-  port: 22125
