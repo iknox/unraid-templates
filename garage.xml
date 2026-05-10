@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>garage</Name>
-  <Repository>dxflrs/garage:v2.3.0</Repository>
-  <Registry>https://hub.docker.com/r/dxflrs/garage</Registry>
+  <Repository>ghcr.io/iknox/garage-env:main</Repository>
+  <Registry>https://github.com/iknox/garage-env/pkgs/container/garage-env</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>sh</Shell>
@@ -12,30 +12,32 @@
   <Overview>
     [b]Garage[/b]: S3-compatible distributed object storage, used here as the backing store for Milvus (replacing MinIO).&#xD;
     [br]&#xD;
-    [b]Before first install:[/b]&#xD;
-    - Create the shared bridge network on the Unraid host: [i]docker network create milvus-net[/i]&#xD;
-    - Create appdata dirs: [i]/mnt/cache/appdata/garage/meta[/i] and [i]/mnt/cache/appdata/garage/data[/i]&#xD;
-    - Drop a [i]garage.toml[/i] at [i]/mnt/cache/appdata/garage/garage.toml[/i] (starter in repo under config-examples/)&#xD;
+    This image is a thin wrapper around upstream [i]dxflrs/garage:v2.3.0[/i] that reads every config value from env vars — no [i]garage.toml[/i] to edit. Secrets are auto-generated on first boot and persisted inside the metadata dir.&#xD;
     [br]&#xD;
-    [b]After first start:[/b]&#xD;
-    - [i]docker exec garage /garage status[/i] to confirm healthy&#xD;
-    - Run the bootstrap script to create the Milvus bucket + access key (see repo README)
+    [b]Prerequisites (one-time):[/b]&#xD;
+    1. Unraid UI → Settings → Docker → Add network → Name: [i]milvus-net[/i], Subnet: [i]172.18.0.0/16[/i] (or any private range). This is the shared bridge that garage, etcd, and milvus use to reach each other by container name.&#xD;
+    [br]&#xD;
+    [b]After first start:[/b] click the container icon → Console, then run [i]/garage bucket create milvus[/i] and [i]/garage key create milvus-key[/i] then [i]/garage bucket allow --read --write --owner milvus --key milvus-key[/i] then [i]/garage key info --show-secret milvus-key[/i]. Copy the Key ID + Secret key for the Milvus container's install form.
   </Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/garage.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/garage.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=milvus-net</ExtraParams>
-  <PostArgs/>
+  <PostArgs>server</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Garage is a lightweight, efficient, S3-compatible object store designed for geo-distributed deployment. On Unraid it runs as a single-node replacement for MinIO and backs the Milvus vector database.</Description>
+  <Description>Garage is a lightweight, efficient, S3-compatible object store designed for geo-distributed deployment. This template uses ghcr.io/iknox/garage-env, an env-configurable wrapper of upstream Garage v2.3.0.</Description>
   <Config Name="S3 API" Target="3900" Default="3900" Mode="tcp" Description="S3-compatible HTTP API (the port Milvus talks to). Expose to LAN only if you want external S3 clients." Type="Port" Display="always" Required="true" Mask="false">3900</Config>
-  <Config Name="Admin API" Target="3903" Default="3903" Mode="tcp" Description="Admin HTTP API — health checks and metrics. Exposing to LAN is optional." Type="Port" Display="advanced" Required="false" Mask="false">3903</Config>
-  <Config Name="RPC" Target="3901" Default="" Mode="tcp" Description="Cluster RPC port. Not needed for single-node deploys; leave unset." Type="Port" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="Metadata" Target="/var/lib/garage/meta" Default="/mnt/cache/appdata/garage/meta" Mode="rw" Description="Metadata dir (LMDB/sqlite). MUST live on SSD / cache pool — never on /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/meta</Config>
+  <Config Name="Admin API" Target="3903" Default="3903" Mode="tcp" Description="Admin HTTP API — health checks and metrics." Type="Port" Display="advanced" Required="false" Mask="false">3903</Config>
+  <Config Name="Metadata" Target="/var/lib/garage/meta" Default="/mnt/cache/appdata/garage/meta" Mode="rw" Description="Metadata dir (LMDB/sqlite). MUST live on SSD / cache pool — never on /mnt/user. Secrets are persisted here as .garage-env-secrets." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/meta</Config>
   <Config Name="Data" Target="/var/lib/garage/data" Default="/mnt/cache/appdata/garage/data" Mode="rw" Description="Bulk data dir. Can live on the array for cheap storage; cache pool is fine too." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/data</Config>
-  <Config Name="Config File" Target="/etc/garage.toml" Default="/mnt/cache/appdata/garage/garage.toml" Mode="ro" Description="Path on host to garage.toml. See config-examples/garage.toml in the template repo for a starter." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/garage/garage.toml</Config>
+  <Config Name="GARAGE_S3_REGION" Target="GARAGE_S3_REGION" Default="garage" Description="S3 region string. Must match minio.region on the Milvus side (default 'garage' works end-to-end with our milvus template)." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
+  <Config Name="GARAGE_DB_ENGINE" Target="GARAGE_DB_ENGINE" Default="sqlite" Description="Metadata DB engine: sqlite (default, simplest) or lmdb (slightly faster)." Type="Variable" Display="advanced" Required="false" Mask="false">sqlite</Config>
+  <Config Name="GARAGE_REPLICATION_FACTOR" Target="GARAGE_REPLICATION_FACTOR" Default="1" Description="Replication factor — 1 for single-node deployments." Type="Variable" Display="advanced" Required="true" Mask="false">1</Config>
+  <Config Name="GARAGE_RPC_SECRET" Target="GARAGE_RPC_SECRET" Default="" Description="Leave blank to auto-generate on first boot. Subsequent boots pick up the persisted value from the metadata dir." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="GARAGE_ADMIN_TOKEN" Target="GARAGE_ADMIN_TOKEN" Default="" Description="Leave blank to auto-generate on first boot." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="GARAGE_METRICS_TOKEN" Target="GARAGE_METRICS_TOKEN" Default="" Description="Leave blank to auto-generate on first boot." Type="Variable" Display="advanced" Required="false" Mask="true"/>
 </Container>

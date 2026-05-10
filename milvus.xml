@@ -12,15 +12,17 @@
   <Overview>
     [b]Milvus Standalone[/b] — open-source vector database. Backs the [i]memsearch[/i] Claude Code plugin.&#xD;
     [br]&#xD;
-    [b]Prerequisites before install:[/b]&#xD;
-    1. Shared bridge network exists: [i]docker network create milvus-net[/i]&#xD;
-    2. Garage is running and a bucket + access key have been created (see repo README)&#xD;
-    3. milvus-etcd is running on the same network&#xD;
-    4. [i]milvus.yaml[/i] exists at [i]/mnt/cache/appdata/milvus/configs/milvus.yaml[/i] (starter in repo under config-examples/)&#xD;
+    [b]Install order:[/b] Garage first, then milvus-etcd, then this. All three share the [i]milvus-net[/i] bridge network (created once via Unraid UI → Settings → Docker → Add network).&#xD;
     [br]&#xD;
-    [b]Autostart order:[/b] Garage (1) → etcd (2) → Milvus (3) with ~10s delays between.&#xD;
+    [b]Before installing Milvus:[/b] open Garage's container console and run:&#xD;
+    [i]/garage bucket create milvus[/i]&#xD;
+    [i]/garage key create milvus-key[/i]&#xD;
+    [i]/garage bucket allow --read --write --owner milvus --key milvus-key[/i]&#xD;
+    [i]/garage key info --show-secret milvus-key[/i]&#xD;
     [br]&#xD;
-    [b]After install:[/b] confirm health via [i]curl http://[UNRAID-IP]:9091/healthz[/i]
+    Paste the printed Key ID and Secret key into the [b]MINIO_ACCESS_KEY_ID[/b] and [b]MINIO_SECRET_ACCESS_KEY[/b] fields below.&#xD;
+    [br]&#xD;
+    [b]After install:[/b] [i]curl http://[UNRAID-IP]:9091/healthz[/i] should return "OK".
   </Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
@@ -32,12 +34,31 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Milvus is a cloud-native, open-source vector database built to power embedding similarity search. This template runs Milvus Standalone (single-node) pointed at Garage for object storage and etcd for coordination.</Description>
+  <Description>Milvus Standalone (single-node) pointed at Garage for object storage and etcd for metadata. All configuration is via env vars — no milvus.yaml mount required.</Description>
   <Config Name="gRPC API" Target="19530" Default="19530" Mode="tcp" Description="Milvus gRPC API — pymilvus clients and memsearch connect here." Type="Port" Display="always" Required="true" Mask="false">19530</Config>
   <Config Name="Health / Metrics" Target="9091" Default="9091" Mode="tcp" Description="HTTP health endpoint (/healthz) and Prometheus metrics (/metrics)." Type="Port" Display="always" Required="true" Mask="false">9091</Config>
-  <Config Name="Data" Target="/var/lib/milvus" Default="/mnt/cache/appdata/milvus/data" Mode="rw" Description="Milvus local data (logs, WAL, staging). Cache pool only." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/data</Config>
-  <Config Name="Config" Target="/milvus/configs/milvus.yaml" Default="/mnt/cache/appdata/milvus/configs/milvus.yaml" Mode="ro" Description="milvus.yaml — starter at config-examples/milvus.yaml in the template repo. Set minio.accessKeyID + secretAccessKey + bucketName to match Garage." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/configs/milvus.yaml</Config>
-  <Config Name="ETCD_ENDPOINTS" Target="ETCD_ENDPOINTS" Default="milvus-etcd:2379" Description="Container name of the etcd instance on milvus-net (default works with milvus-etcd template)." Type="Variable" Display="advanced" Required="true" Mask="false">milvus-etcd:2379</Config>
-  <Config Name="MINIO_ADDRESS" Target="MINIO_ADDRESS" Default="garage:3900" Description="Object-store address. For Garage, use `garage:3900`. Milvus uses the `minio` config section for any S3-compatible backend." Type="Variable" Display="advanced" Required="true" Mask="false">garage:3900</Config>
-  <Config Name="COMMON_STORAGETYPE" Target="COMMON_STORAGETYPE" Default="remote" Description="Remote object storage (vs local fs)." Type="Variable" Display="advanced" Required="true" Mask="false">remote</Config>
+  <Config Name="Data" Target="/var/lib/milvus" Default="/mnt/cache/appdata/milvus/data" Mode="rw" Description="Milvus local data (rocksmq WAL, staging). Cache pool only — do not use /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/data</Config>
+  <Config Name="MINIO_ACCESS_KEY_ID" Target="MINIO_ACCESS_KEY_ID" Default="" Description="Garage access key ID from 'garage key info --show-secret milvus-key'." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="MINIO_SECRET_ACCESS_KEY" Target="MINIO_SECRET_ACCESS_KEY" Default="" Description="Garage secret key from 'garage key info --show-secret milvus-key'." Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="ETCD_ENDPOINTS" Target="ETCD_ENDPOINTS" Default="milvus-etcd:2379" Description="Container name:port of the etcd instance on milvus-net. Default works with the milvus-etcd template." Type="Variable" Display="advanced" Required="true" Mask="false">milvus-etcd:2379</Config>
+  <Config Name="MINIO_ADDRESS" Target="MINIO_ADDRESS" Default="garage" Description="Hostname of the S3-compatible store (container name on milvus-net)." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
+  <Config Name="MINIO_PORT" Target="MINIO_PORT" Default="3900" Description="S3 API port on the Garage container." Type="Variable" Display="advanced" Required="true" Mask="false">3900</Config>
+  <Config Name="MINIO_BUCKET_NAME" Target="MINIO_BUCKET_NAME" Default="milvus" Description="Bucket name created in Garage (matches the 'garage bucket create' command)." Type="Variable" Display="advanced" Required="true" Mask="false">milvus</Config>
+  <Config Name="MINIO_ROOT_PATH" Target="MINIO_ROOT_PATH" Default="files" Description="Prefix inside the bucket for all Milvus objects." Type="Variable" Display="advanced" Required="true" Mask="false">files</Config>
+  <Config Name="MINIO_REGION" Target="MINIO_REGION" Default="garage" Description="Must match Garage's GARAGE_S3_REGION. SigV4 rejects mismatches with 'AuthorizationHeaderMalformed'." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
+  <Config Name="MINIO_USE_VIRTUAL_HOST" Target="MINIO_USE_VIRTUAL_HOST" Default="false" Description="Path-style S3 addressing. Must be false for Garage (no wildcard DNS in our setup)." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
+  <Config Name="MINIO_USE_SSL" Target="MINIO_USE_SSL" Default="false" Description="Plain HTTP within milvus-net. Set true only if Garage is behind HTTPS." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
+  <Config Name="COMMON_STORAGE_TYPE" Target="COMMON_STORAGE_TYPE" Default="remote" Description="Use remote object storage (Garage) vs local filesystem." Type="Variable" Display="advanced" Required="true" Mask="false">remote</Config>
+  <Config Name="MQ_TYPE" Target="MQ_TYPE" Default="rocksmq" Description="Message queue backend. MUST be rocksmq for standalone — default is kafka which fails to connect." Type="Variable" Display="advanced" Required="true" Mask="false">rocksmq</Config>
+  <Config Name="LOCAL_STORAGE_PATH" Target="LOCAL_STORAGE_PATH" Default="/var/lib/milvus/data" Description="Inside-container path for segment cache. Must be explicit — empty default causes QueryNode FATAL." Type="Variable" Display="advanced" Required="true" Mask="false">/var/lib/milvus/data</Config>
+  <Config Name="ROCKSMQ_PATH" Target="ROCKSMQ_PATH" Default="/var/lib/milvus/rdb_data" Description="Inside-container path for rocksmq WAL." Type="Variable" Display="advanced" Required="true" Mask="false">/var/lib/milvus/rdb_data</Config>
+  <Config Name="DATA_COORD_SEGMENT_MIN_SIZE_FROM_IDLE_TO_SEALED" Target="DATA_COORD_SEGMENT_MIN_SIZE_FROM_IDLE_TO_SEALED" Default="16" Description="Pinned to avoid 2.6.x stats-config validator panic on large-memory hosts." Type="Variable" Display="advanced" Required="true" Mask="false">16</Config>
+  <Config Name="PROXY_PORT" Target="PROXY_PORT" Default="19530" Description="External gRPC port. Pinned to avoid 2.6 MixCoord port-collision startup bug." Type="Variable" Display="advanced" Required="true" Mask="false">19530</Config>
+  <Config Name="ROOT_COORD_PORT" Target="ROOT_COORD_PORT" Default="22125" Description="On 2.6 MixCoord binds this port. MUST be distinct from PROXY_PORT." Type="Variable" Display="advanced" Required="true" Mask="false">22125</Config>
+  <Config Name="DATA_COORD_PORT" Target="DATA_COORD_PORT" Default="13333" Type="Variable" Display="advanced" Required="true" Mask="false">13333</Config>
+  <Config Name="QUERY_COORD_PORT" Target="QUERY_COORD_PORT" Default="19531" Type="Variable" Display="advanced" Required="true" Mask="false">19531</Config>
+  <Config Name="QUERY_NODE_PORT" Target="QUERY_NODE_PORT" Default="21123" Type="Variable" Display="advanced" Required="true" Mask="false">21123</Config>
+  <Config Name="DATA_NODE_PORT" Target="DATA_NODE_PORT" Default="21124" Type="Variable" Display="advanced" Required="true" Mask="false">21124</Config>
+  <Config Name="INDEX_COORD_PORT" Target="INDEX_COORD_PORT" Default="31000" Type="Variable" Display="advanced" Required="true" Mask="false">31000</Config>
+  <Config Name="INDEX_NODE_PORT" Target="INDEX_NODE_PORT" Default="21121" Type="Variable" Display="advanced" Required="true" Mask="false">21121</Config>
 </Container>
