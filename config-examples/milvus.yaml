@@ -47,6 +47,25 @@ rocksmq:
 dataCoord:
   segment:
     minSizeFromIdleToSealed: 16
+  # Pin DataCoord's gRPC port away from Proxy's 19530
+  port: 13333
+
+# On 2.6+ MixCoord takes over RootCoord's role and binds rootCoord.port.
+# The default sometimes resolves to 19530, colliding with Proxy. Pin it.
+proxy:
+  port: 19530
+rootCoord:
+  port: 22125
+queryCoord:
+  port: 19531
+queryNode:
+  port: 21123
+dataNode:
+  port: 21124
+indexCoord:
+  port: 31000
+indexNode:
+  port: 21121
 
 log:
   level: info
