@@ -1,5 +1,5 @@
 # Milvus Standalone config — only the keys that differ from defaults.
-# Full reference: https://github.com/milvus-io/milvus/blob/v2.5.27/configs/milvus.yaml
+# Full reference: https://github.com/milvus-io/milvus/blob/v2.6.15/configs/milvus.yaml
 
 etcd:
   endpoints:
@@ -29,6 +29,24 @@ minio:
 
 common:
   storageType: remote
+
+# MUST be rocksmq for standalone; image default is kafka which tries localhost:9092
+mq:
+  type: rocksmq
+
+# MUST be explicit; empty default causes QueryNode FATAL on mkdir
+localStorage:
+  path: /var/lib/milvus/data
+
+rocksmq:
+  path: /var/lib/milvus/rdb_data
+
+# 2.6.x stats-config validator panics on startup when minSizeFromIdleToSealed=0
+# (which is what the default resolves to on large-memory hosts). Pin to the
+# documented default of 16 MB.
+dataCoord:
+  segment:
+    minSizeFromIdleToSealed: 16
 
 log:
   level: info
