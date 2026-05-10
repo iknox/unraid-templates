@@ -17,7 +17,7 @@
     [b]Prerequisites (one-time):[/b]&#xD;
     1. Unraid UI → Settings → Docker → Add network → Name: [i]milvus-net[/i], Subnet: [i]172.18.0.0/16[/i] (or any private range). This is the shared bridge that garage, etcd, and milvus use to reach each other by container name.&#xD;
     [br]&#xD;
-    [b]After first start:[/b] click the container icon → Console, then run [i]/garage bucket create milvus[/i] and [i]/garage key create milvus-key[/i] then [i]/garage bucket allow --read --write --owner milvus --key milvus-key[/i] then [i]/garage key info --show-secret milvus-key[/i]. Copy the Key ID + Secret key for the Milvus container's install form.
+    [b]After first start:[/b] the container auto-bootstraps its cluster layout. To create a bucket + access key for Milvus (or any S3 client), from the Unraid terminal run [i]docker exec garage /garage bucket create milvus[/i], [i]docker exec garage /garage key create milvus-key[/i], [i]docker exec garage /garage bucket allow --read --write --owner milvus --key milvus-key[/i], then [i]docker exec garage /garage key info --show-secret milvus-key[/i] to read the Key ID + Secret.
   </Overview>
   <Category>HomeLab: Memsearch:</Category>
   <WebUI>http://[IP]:[PORT:3903]/health</WebUI>

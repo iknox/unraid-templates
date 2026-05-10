@@ -14,11 +14,11 @@
     [br]&#xD;
     [b]Install order:[/b] Garage first, then milvus-etcd, then this. All three share the [i]milvus-net[/i] bridge network (created once via Unraid UI → Settings → Docker → Add network).&#xD;
     [br]&#xD;
-    [b]Before installing Milvus:[/b] open Garage's container console and run:&#xD;
-    [i]/garage bucket create milvus[/i]&#xD;
-    [i]/garage key create milvus-key[/i]&#xD;
-    [i]/garage bucket allow --read --write --owner milvus --key milvus-key[/i]&#xD;
-    [i]/garage key info --show-secret milvus-key[/i]&#xD;
+    [b]Before installing Milvus:[/b] create the bucket + access key. From the Unraid terminal (the garage container auto-bootstrapped its layout on first boot, so these just work):&#xD;
+    [i]docker exec garage /garage bucket create milvus[/i]&#xD;
+    [i]docker exec garage /garage key create milvus-key[/i]&#xD;
+    [i]docker exec garage /garage bucket allow --read --write --owner milvus --key milvus-key[/i]&#xD;
+    [i]docker exec garage /garage key info --show-secret milvus-key[/i]&#xD;
     [br]&#xD;
     Paste the printed Key ID and Secret key into the [b]MINIO_ACCESS_KEY_ID[/b] and [b]MINIO_SECRET_ACCESS_KEY[/b] fields below.&#xD;
     [br]&#xD;
