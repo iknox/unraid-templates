@@ -1,5 +1,5 @@
 # Milvus Standalone config — only the keys that differ from defaults.
-# Full reference: https://github.com/milvus-io/milvus/blob/v2.6.15/configs/milvus.yaml
+# Full reference: https://github.com/milvus-io/milvus/blob/v2.5.27/configs/milvus.yaml
 
 etcd:
   endpoints:
@@ -29,36 +29,6 @@ minio:
 
 common:
   storageType: remote
-
-# MUST be rocksmq for standalone; image default is kafka which tries localhost:9092
-mq:
-  type: rocksmq
-
-# MUST be explicit; empty default causes QueryNode FATAL: mkdir: no such file or directory
-localStorage:
-  path: /var/lib/milvus/data
-
-rocksmq:
-  path: /var/lib/milvus/rdb_data
-
-# Pin internal service ports. On 2.6+ RootCoord is consolidated into
-# MixCoord, which reads rootCoord.port — default is 22125.
-proxy:
-  port: 19530
-rootCoord:
-  port: 22125
-dataCoord:
-  port: 13333
-queryCoord:
-  port: 19531
-queryNode:
-  port: 21123
-dataNode:
-  port: 21124
-indexCoord:
-  port: 31000
-indexNode:
-  port: 21121
 
 log:
   level: info
