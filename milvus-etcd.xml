@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>milvus-etcd</Name>
+  <Name>etcd</Name>
   <Repository>quay.io/coreos/etcd:v3.5.25</Repository>
   <Registry>https://quay.io/repository/coreos/etcd</Registry>
   <Network>bridge</Network>
@@ -9,17 +9,8 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://etcd.io</Project>
-  <Overview>
-    [b]etcd v3[/b] used as metadata/coordination store for Milvus Standalone.&#xD;
-    [br]&#xD;
-    [b]Not a standalone app[/b] — install Garage first, then this, then Milvus.&#xD;
-    [b]Autostart order:[/b] Garage (1) → etcd (2) → Milvus (3) with ~10s delays.&#xD;
-    [br]&#xD;
-    No ports need to be published to the host; Milvus reaches etcd at [i]milvus-etcd:2379[/i] over the [i]milvus-net[/i] network.&#xD;
-    [br]&#xD;
-    [b]Data dir MUST be on cache/NVMe[/b] — etcd is sensitive to slow disks and FUSE fsync semantics.
-  </Overview>
-  <Category>HomeLab: Memsearch:</Category>
+  <Overview>Distributed reliable key-value store. Used as the coordination + metadata backend for Milvus and other distributed systems, or on its own as a general-purpose consistent KV store.&#xD;[br]Listens on TCP 2379 for clients; no ports are published to the host by default — consumers on the same Docker network reach it by container name.</Overview>
+  <Category>Tools: Databases:</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus-etcd.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/etcd.png</Icon>
@@ -29,10 +20,10 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>etcd is a distributed reliable key-value store. Milvus Standalone uses it for metadata and leader election.</Description>
-  <Config Name="Data" Target="/etcd" Default="/mnt/user/appdata/milvus/etcd" Mode="rw" Description="etcd data dir. For best reliability configure the appdata share to prefer a cache pool / SSD — etcd is fsync-sensitive." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/milvus/etcd</Config>
-  <Config Name="ETCD_AUTO_COMPACTION_MODE" Target="ETCD_AUTO_COMPACTION_MODE" Default="revision" Description="Auto-compaction mode (keeps the data dir from growing unbounded)." Type="Variable" Display="advanced" Required="true" Mask="false">revision</Config>
+  <Description>etcd is a strongly-consistent distributed key-value store built on Raft. Used by Kubernetes, Milvus, and many other systems for service discovery and shared metadata.</Description>
+  <Config Name="Data" Target="/etcd" Default="/mnt/user/appdata/etcd" Mode="rw" Description="etcd data dir. For best reliability prefer a cache pool / SSD — etcd is fsync-sensitive." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/etcd</Config>
+  <Config Name="ETCD_AUTO_COMPACTION_MODE" Target="ETCD_AUTO_COMPACTION_MODE" Default="revision" Description="Auto-compaction mode — keeps the data dir from growing unbounded." Type="Variable" Display="advanced" Required="true" Mask="false">revision</Config>
   <Config Name="ETCD_AUTO_COMPACTION_RETENTION" Target="ETCD_AUTO_COMPACTION_RETENTION" Default="1000" Description="Keep this many revisions before compacting." Type="Variable" Display="advanced" Required="true" Mask="false">1000</Config>
-  <Config Name="ETCD_QUOTA_BACKEND_BYTES" Target="ETCD_QUOTA_BACKEND_BYTES" Default="4294967296" Description="Backend quota in bytes (4 GiB). Raise if Milvus reports etcd full." Type="Variable" Display="advanced" Required="true" Mask="false">4294967296</Config>
+  <Config Name="ETCD_QUOTA_BACKEND_BYTES" Target="ETCD_QUOTA_BACKEND_BYTES" Default="4294967296" Description="Backend quota in bytes (4 GiB)." Type="Variable" Display="advanced" Required="true" Mask="false">4294967296</Config>
   <Config Name="ETCD_SNAPSHOT_COUNT" Target="ETCD_SNAPSHOT_COUNT" Default="50000" Description="Snapshot every N transactions." Type="Variable" Display="advanced" Required="true" Mask="false">50000</Config>
 </Container>

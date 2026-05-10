@@ -1,10 +1,10 @@
 # unraid-templates
 
-Personal Unraid container templates for my homelab stack.
+Five Unraid container templates for common homelab services, each usable standalone and a few that compose into interesting recipes.
 
 ## Installing the template feed
 
-Unraid has no public "add template repo" UI. The supported mechanism for a personal template source is dropping a clone of this repo into Community Applications' private-apps directory. From the Unraid terminal:
+Unraid's Community Applications plugin doesn't expose an "Add Repository" UI, so personal template sources get dropped into CA's private-apps directory. From the Unraid terminal:
 
 ```
 cd /boot/config/plugins/community.applications/private
@@ -17,53 +17,74 @@ Refresh the Apps page. The templates appear under the **Private Apps** filter.
 
 ## Catalog
 
-### Memsearch backend (Milvus + etcd + Garage)
+| Template           | Image                                      | Category               | Role                                  |
+|--------------------|--------------------------------------------|------------------------|---------------------------------------|
+| `garage`           | `ghcr.io/iknox/garage-env:main`            | Tools: Storage         | S3-compatible object store            |
+| `etcd`             | `quay.io/coreos/etcd:v3.5.25`              | Tools: Databases       | Distributed KV store                  |
+| `milvus`           | `milvusdb/milvus:v2.6.15`                  | Tools: Databases       | Vector database (Standalone mode)     |
+| `wyoming-parakeet` | `ghcr.io/tboby/wyoming-onnx-asr:v0.5.0`    | Home Assistant         | Wyoming-protocol STT                  |
+| `wyoming-kokoro`   | `ghcr.io/iknox/wyoming-kokoro-cpu:main`    | Home Assistant         | Wyoming-protocol TTS                  |
 
-Milvus-backed vector database for the [zilliztech/memsearch](https://github.com/zilliztech/memsearch) Claude Code plugin. Three containers on a shared bridge; all configured via env vars — no yaml or toml files to hand-edit.
+### Garage (`garage`)
 
-| Template      | Image                              | Role                                  |
-|---------------|------------------------------------|---------------------------------------|
-| `garage`      | `ghcr.io/iknox/garage-env:main`    | S3-compatible object store            |
-| `milvus-etcd` | `quay.io/coreos/etcd:v3.5.25`      | Metadata + coordination               |
-| `milvus`      | `milvusdb/milvus:v2.6.15`          | Vector database (Standalone mode)     |
+S3-compatible object storage — a lightweight MinIO alternative. This template uses [iknox/garage-env](https://github.com/iknox/garage-env), which wraps upstream Garage v2.3.0 with env-var configuration and auto-generates RPC/admin/metrics secrets plus the v2 cluster layout on first boot. Install and use — no TOML to edit, no bootstrap ritual.
 
-#### One-time prereq — create the shared Docker network
+### etcd (`etcd`)
 
-**Unraid webUI → Settings → Docker → Network Type** → **Add new network**:
+Strongly-consistent distributed key-value store. Used by Kubernetes, Milvus, and many other systems. Ships with Milvus-friendly auto-compaction defaults.
+
+### Milvus Standalone (`milvus`)
+
+Open-source vector database for similarity search over embeddings. Standalone mode needs an S3-compatible object store and an etcd instance; template defaults point at the `garage` and `etcd` containers above. If you install all three, the only manual step is creating a Garage bucket and access key — see the [Recipe: memsearch backend](#recipe-memsearch-backend) below.
+
+### Wyoming Parakeet (`wyoming-parakeet`)
+
+CPU-only speech-to-text using NVIDIA NeMo Parakeet-TDT 0.6B v2 through ONNX Runtime, wrapped in the Wyoming protocol. Drop-in STT for Home Assistant Voice Assist, Rhasspy, or anything else that speaks Wyoming.
+
+### Wyoming Kokoro (`wyoming-kokoro`)
+
+CPU-only neural text-to-speech using Kokoro-ONNX, over Wyoming. Upstream chiabre/wyoming-kokoro ships source only; this template uses [iknox/wyoming-kokoro-cpu](https://github.com/iknox/wyoming-kokoro-cpu), which repackages it as a reproducible image. 50+ voices in English, Spanish, French, Italian, Portuguese, Japanese, Korean, and Chinese.
+
+---
+
+## Recipe: memsearch backend
+
+Wires Garage + etcd + Milvus into a memory-search backend for the [zilliztech/memsearch](https://github.com/zilliztech/memsearch) Claude Code plugin (or any client that talks pymilvus). All three containers run on a shared Docker network and find each other by name.
+
+### 1. Create the shared Docker network (one-time)
+
+Unraid webUI → **Settings** → **Docker** → **Network Type** → **Add new network**:
 - Name: `milvus-net`
 - Driver: bridge
 - Subnet: any free private range (e.g. `172.28.0.0/16`)
 
-The three containers find each other by name (`garage`, `milvus-etcd`, `milvus`) on this network, which requires a user-defined bridge — the default `bridge` network doesn't support DNS.
+The default `bridge` network doesn't do DNS-based container-name resolution, which is why a user-defined bridge is required.
 
-#### Install order
+### 2. Install the containers
 
-1. **`garage`** — install from Apps → Private Apps. Secrets auto-generate on first boot and persist in the metadata dir.
-
-2. **Create the Milvus bucket and access key.** The garage container auto-bootstraps its cluster layout on first boot, so these just work. From the Unraid terminal:
+1. **`garage`** — install from Apps → Private Apps. Auto-generates secrets and cluster layout on first boot.
+2. **Create the Milvus bucket + access key.** From the Unraid terminal:
    ```
    docker exec garage garage bucket create milvus
    docker exec garage garage key create milvus-key
    docker exec garage garage bucket allow --read --write --owner milvus --key milvus-key
    docker exec garage garage key info --show-secret milvus-key
    ```
-   Copy the printed **Key ID** and **Secret key** — you'll paste them into the Milvus install form.
-
-3. **`milvus-etcd`** — install from Apps → Private Apps. No config needed.
-
+   Copy the printed **Key ID** and **Secret key**.
+3. **`etcd`** — install from Apps → Private Apps. No config needed.
 4. **`milvus`** — install from Apps → Private Apps. Paste the Key ID into `MINIO_ACCESS_KEY_ID` and the Secret key into `MINIO_SECRET_ACCESS_KEY`. Leave everything else at defaults.
 
-#### Autostart
+### 3. Autostart
 
-Docker page → **Advanced View** → set:
+Docker page → **Advanced View**:
 
-| Container     | Autostart | Wait |
-|---------------|-----------|------|
-| `garage`      | ON        | 5s   |
-| `milvus-etcd` | ON        | 5s   |
-| `milvus`      | ON        | 0s   |
+| Container | Autostart | Wait |
+|-----------|-----------|------|
+| `garage`  | ON        | 5s   |
+| `etcd`    | ON        | 5s   |
+| `milvus`  | ON        | 0s   |
 
-#### Smoke test
+### 4. Smoke test
 
 From any machine that can reach the Unraid host:
 
@@ -72,38 +93,28 @@ pip install pymilvus
 python3 -c "from pymilvus import MilvusClient; print(MilvusClient(uri='http://UNRAID-IP:19530').list_collections())"
 ```
 
-Should print `[]`.
+Expect `[]`.
 
-#### Point memsearch at it
-
-On your workstation:
+### 5. Point memsearch at it
 
 ```
 memsearch config set milvus.uri http://UNRAID-IP:19530
 ```
 
-Restart Claude Code. The `SessionStart` hook now indexes to remote Milvus instead of the local `.db` file.
+Restart Claude Code. The `SessionStart` hook now indexes to remote Milvus instead of a local `.db` file.
 
 ---
 
-### Home Assistant Voice Assist (Parakeet + Kokoro)
+## Recipe: local Home Assistant Voice Assist
 
-Wyoming-protocol STT/TTS containers for HA's Assist pipeline. Fully CPU-based.
+Install `wyoming-parakeet` and `wyoming-kokoro` from Apps → Private Apps — no prereqs, no shared network, models download on first boot.
 
-| Template           | Image                                      | Role                       |
-|--------------------|--------------------------------------------|----------------------------|
-| `wyoming-parakeet` | `ghcr.io/tboby/wyoming-onnx-asr:v0.5.0`    | STT (NVIDIA Parakeet-TDT)  |
-| `wyoming-kokoro`   | `ghcr.io/iknox/wyoming-kokoro-cpu:main`    | TTS (Kokoro-ONNX)          |
-
-**Install** from Apps → Private Apps. Models download on first boot (~600 MB Parakeet, ~80 MB Kokoro). Both are independent of each other and of the memsearch stack.
-
-**Configure in HA:** Settings → Devices & services → Add integration → **Wyoming Protocol** → host = Unraid IP, port = `10300` (Parakeet) or `10200` (Kokoro). Then Settings → Voice assistants → create a pipeline that selects them as STT/TTS.
+In Home Assistant: Settings → Devices & services → **Wyoming Protocol** → add two entries pointing at your Unraid IP on ports `10300` (Parakeet STT) and `10200` (Kokoro TTS). Then Settings → Voice assistants → create a pipeline that selects them as STT/TTS.
 
 ---
 
 ## Notes
 
 - All templates pin image tags. `:latest` is avoided so "update available" pings are actionable, not noise.
-- Milvus compose file on upstream master currently references `v3.0-beta`; we pin `v2.6.15`.
-- Garage is wrapped by [iknox/garage-env](https://github.com/iknox/garage-env), a thin shim that templates `garage.toml` from env vars and auto-generates secrets.
-- Kokoro is wrapped by [iknox/wyoming-kokoro-cpu](https://github.com/iknox/wyoming-kokoro-cpu) since chiabre's upstream is source-only.
+- Milvus's upstream compose file currently references `v3.0-beta`; we pin `v2.6.15`.
+- Garage is wrapped by [iknox/garage-env](https://github.com/iknox/garage-env). Kokoro by [iknox/wyoming-kokoro-cpu](https://github.com/iknox/wyoming-kokoro-cpu).

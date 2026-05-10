@@ -9,14 +9,8 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://github.com/tboby/wyoming-onnx-asr</Project>
-  <Overview>
-    [b]Wyoming Parakeet (STT)[/b] — speech-to-text via NVIDIA NeMo Parakeet-TDT 0.6B v2 running on CPU through ONNX Runtime, exposed over the Wyoming protocol so Home Assistant can use it as a Speech-to-Text engine.&#xD;
-    [br]&#xD;
-    [b]Model downloads on first run[/b] (~600 MB). With int8 quantization the footprint is smaller and CPU inference is significantly faster — set quantization in the [i]Model Quantization[/i] field (default int8).&#xD;
-    [br]&#xD;
-    [b]To use in Home Assistant:[/b] Settings → Devices &amp; services → Add integration → [i]Wyoming Protocol[/i] → host = Unraid IP, port = 10300.
-  </Overview>
-  <Category>HomeLab: Voice:</Category>
+  <Overview>Speech-to-text server using NVIDIA NeMo Parakeet-TDT 0.6B v2 on CPU through ONNX Runtime, exposed over the Wyoming protocol. Home Assistant, Rhasspy, and any other Wyoming client can use it as an STT engine.&#xD;[br]Model (~600 MB) auto-downloads on first boot. Add to HA via Settings → Devices &amp; services → Wyoming Protocol, port 10300.</Overview>
+  <Category>Home Assistant:</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/wyoming-parakeet.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/parakeet.png</Icon>

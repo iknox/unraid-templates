@@ -9,16 +9,8 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/wyoming-kokoro-cpu/issues</Support>
   <Project>https://github.com/iknox/wyoming-kokoro-cpu</Project>
-  <Overview>
-    [b]Wyoming Kokoro (TTS)[/b] — neural text-to-speech via Kokoro-ONNX exposed over the Wyoming protocol so Home Assistant can use it as a TTS engine. CPU-only; pairs with [i]wyoming-parakeet[/i] for a full local Assist pipeline.&#xD;
-    [br]&#xD;
-    [b]Model downloads on first run[/b] (~80 MB for fp32). Change the [i]Model Variant[/i] env to [i]int8[/i] for a smaller/faster model on low-power hardware.&#xD;
-    [br]&#xD;
-    [b]To use in Home Assistant:[/b] Settings → Devices &amp; services → Add integration → [i]Wyoming Protocol[/i] → host = Unraid IP, port = 10200.&#xD;
-    [br]&#xD;
-    Packages [i]chiabre/wyoming-kokoro[/i] (MIT) into a reproducible image. Source: [url=https://github.com/iknox/wyoming-kokoro-cpu]iknox/wyoming-kokoro-cpu[/url].
-  </Overview>
-  <Category>HomeLab: Voice:</Category>
+  <Overview>Neural text-to-speech server using Kokoro-ONNX on CPU, exposed over the Wyoming protocol. Home Assistant, Rhasspy, and any other Wyoming client can use it as a TTS engine. Over 50 voices across English, Spanish, French, Italian, Portuguese, Japanese, Korean, and Chinese.&#xD;[br]Model (~80 MB) auto-downloads on first boot. Add to HA via Settings → Devices &amp; services → Wyoming Protocol, port 10200.</Overview>
+  <Category>Home Assistant:</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/wyoming-kokoro.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/kokoro.png</Icon>
