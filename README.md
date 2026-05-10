@@ -29,6 +29,12 @@ Refresh the Apps page. The templates appear under the **Private Apps** filter.
 
 S3-compatible object storage — a lightweight MinIO alternative. This template uses [iknox/garage-env](https://github.com/iknox/garage-env), which wraps upstream Garage v2.3.0 with env-var configuration and auto-generates RPC/admin/metrics secrets plus the v2 cluster layout on first boot. Install and use — no TOML to edit, no bootstrap ritual.
 
+On first boot, the generated RPC/admin/metrics secrets are printed to the container log. If the Unraid log panel scrolls past before you can copy them, recover them from the host any time:
+
+```
+docker logs garage 2>&1 | grep -A6 "first-boot secrets"
+```
+
 ### etcd (`etcd`)
 
 Strongly-consistent distributed key-value store. Used by Kubernetes, Milvus, and many other systems. Ships with Milvus-friendly auto-compaction defaults.
