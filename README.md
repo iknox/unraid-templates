@@ -42,10 +42,10 @@ The three containers find each other by name (`garage`, `milvus-etcd`, `milvus`)
 
 2. **Create the Milvus bucket and access key.** The garage container auto-bootstraps its cluster layout on first boot, so these just work. From the Unraid terminal:
    ```
-   docker exec garage /garage bucket create milvus
-   docker exec garage /garage key create milvus-key
-   docker exec garage /garage bucket allow --read --write --owner milvus --key milvus-key
-   docker exec garage /garage key info --show-secret milvus-key
+   docker exec garage garage bucket create milvus
+   docker exec garage garage key create milvus-key
+   docker exec garage garage bucket allow --read --write --owner milvus --key milvus-key
+   docker exec garage garage key info --show-secret milvus-key
    ```
    Copy the printed **Key ID** and **Secret key** — you'll paste them into the Milvus install form.
 
