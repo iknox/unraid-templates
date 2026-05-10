@@ -36,7 +36,7 @@ rocksmq:
 proxy:
   port: 19530
 rootCoord:
-  port: 53100
+  port: 22125
 dataCoord:
   port: 13333
 queryCoord:
