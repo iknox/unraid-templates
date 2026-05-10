@@ -28,5 +28,5 @@
   <DonateLink/>
   <Description>CPU-only ONNX implementation of NVIDIA NeMo Parakeet-TDT 0.6B v2, served over the Wyoming protocol. Pairs with any Wyoming TTS (e.g. Piper) behind Home Assistant Assist.</Description>
   <Config Name="Wyoming Port" Target="10300" Default="10300" Mode="tcp" Description="Wyoming protocol TCP port — Home Assistant Wyoming integration connects here (tcp://UNRAID-IP:10300)." Type="Port" Display="always" Required="true" Mask="false">10300</Config>
-  <Config Name="Model Cache" Target="/data" Default="/mnt/cache/appdata/wyoming-parakeet" Mode="rw" Description="ONNX model cache. Models auto-download on first run (~600 MB). Cache pool recommended for SSD speed on reloads." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/wyoming-parakeet</Config>
+  <Config Name="Model Cache" Target="/data" Default="/mnt/user/appdata/wyoming-parakeet" Mode="rw" Description="ONNX model cache. Models auto-download on first run (~600 MB). Cache pool recommended for SSD speed on reloads." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/wyoming-parakeet</Config>
 </Container>

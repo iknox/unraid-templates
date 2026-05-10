@@ -30,7 +30,7 @@
   <DonateText/>
   <DonateLink/>
   <Description>etcd is a distributed reliable key-value store. Milvus Standalone uses it for metadata and leader election.</Description>
-  <Config Name="Data" Target="/etcd" Default="/mnt/cache/appdata/milvus/etcd" Mode="rw" Description="etcd data dir. Cache pool only — never /mnt/user." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/milvus/etcd</Config>
+  <Config Name="Data" Target="/etcd" Default="/mnt/user/appdata/milvus/etcd" Mode="rw" Description="etcd data dir. For best reliability configure the appdata share to prefer a cache pool / SSD — etcd is fsync-sensitive." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/milvus/etcd</Config>
   <Config Name="ETCD_AUTO_COMPACTION_MODE" Target="ETCD_AUTO_COMPACTION_MODE" Default="revision" Description="Auto-compaction mode (keeps the data dir from growing unbounded)." Type="Variable" Display="advanced" Required="true" Mask="false">revision</Config>
   <Config Name="ETCD_AUTO_COMPACTION_RETENTION" Target="ETCD_AUTO_COMPACTION_RETENTION" Default="1000" Description="Keep this many revisions before compacting." Type="Variable" Display="advanced" Required="true" Mask="false">1000</Config>
   <Config Name="ETCD_QUOTA_BACKEND_BYTES" Target="ETCD_QUOTA_BACKEND_BYTES" Default="4294967296" Description="Backend quota in bytes (4 GiB). Raise if Milvus reports etcd full." Type="Variable" Display="advanced" Required="true" Mask="false">4294967296</Config>

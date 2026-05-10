@@ -30,6 +30,6 @@
   <DonateLink/>
   <Description>CPU-only Kokoro TTS over the Wyoming protocol. Default voice af_heart (see upstream README for the full voice catalog — over 50 voices across English, Spanish, French, Italian, Portuguese, Japanese, Korean, Chinese).</Description>
   <Config Name="Wyoming Port" Target="10200" Default="10200" Mode="tcp" Description="Wyoming protocol TCP port — Home Assistant connects here (tcp://UNRAID-IP:10200)." Type="Port" Display="always" Required="true" Mask="false">10200</Config>
-  <Config Name="Data" Target="/data" Default="/mnt/cache/appdata/wyoming-kokoro" Mode="rw" Description="Model + voices cache. Files auto-download on first run (~80 MB)." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/wyoming-kokoro</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/wyoming-kokoro" Mode="rw" Description="Model + voices cache. Files auto-download on first run (~80 MB)." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/wyoming-kokoro</Config>
   <Config Name="KOKORO_MODEL" Target="KOKORO_MODEL" Default="fp32" Description="Model variant: fp32 (CPU, default, best quality), int8 (smaller, faster on edge hardware)." Type="Variable" Display="advanced" Required="false" Mask="false">fp32</Config>
 </Container>
