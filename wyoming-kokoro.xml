@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>wyoming-kokoro</Name>
+  <Repository>ghcr.io/iknox/wyoming-kokoro-cpu:main</Repository>
+  <Registry>https://github.com/iknox/wyoming-kokoro-cpu/pkgs/container/wyoming-kokoro-cpu</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/wyoming-kokoro-cpu/issues</Support>
+  <Project>https://github.com/iknox/wyoming-kokoro-cpu</Project>
+  <Overview>
+    [b]Wyoming Kokoro (TTS)[/b] — neural text-to-speech via Kokoro-ONNX exposed over the Wyoming protocol so Home Assistant can use it as a TTS engine. CPU-only; pairs with [i]wyoming-parakeet[/i] for a full local Assist pipeline.&#xD;
+    [br]&#xD;
+    [b]Model downloads on first run[/b] (~80 MB for fp32). Change the [i]Model Variant[/i] env to [i]int8[/i] for a smaller/faster model on low-power hardware.&#xD;
+    [br]&#xD;
+    [b]To use in Home Assistant:[/b] Settings → Devices &amp; services → Add integration → [i]Wyoming Protocol[/i] → host = Unraid IP, port = 10200.&#xD;
+    [br]&#xD;
+    Packages [i]chiabre/wyoming-kokoro[/i] (MIT) into a reproducible image. Source: [url=https://github.com/iknox/wyoming-kokoro-cpu]iknox/wyoming-kokoro-cpu[/url].
+  </Overview>
+  <Category>HomeLab: Voice:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/wyoming-kokoro.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/kokoro.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs>--uri tcp://0.0.0.0:10200 --data-dir /data --voice af_heart --cpu</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>CPU-only Kokoro TTS over the Wyoming protocol. Default voice af_heart (see upstream README for the full voice catalog — over 50 voices across English, Spanish, French, Italian, Portuguese, Japanese, Korean, Chinese).</Description>
+  <Config Name="Wyoming Port" Target="10200" Default="10200" Mode="tcp" Description="Wyoming protocol TCP port — Home Assistant connects here (tcp://UNRAID-IP:10200)." Type="Port" Display="always" Required="true" Mask="false">10200</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/cache/appdata/wyoming-kokoro" Mode="rw" Description="Model + voices cache. Files auto-download on first run (~80 MB)." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/wyoming-kokoro</Config>
+  <Config Name="KOKORO_MODEL" Target="KOKORO_MODEL" Default="fp32" Description="Model variant: fp32 (CPU, default, best quality), int8 (smaller, faster on edge hardware)." Type="Variable" Display="advanced" Required="false" Mask="false">fp32</Config>
+</Container>
