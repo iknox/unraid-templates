@@ -1,0 +1,38 @@
+# Diagnostic config for debugging port collisions.
+# Pins every coord/node port explicitly.
+
+etcd:
+  endpoints:
+    - milvus-etcd:2379
+  rootPath: by-dev
+
+minio:
+  address: garage
+  port: 3900
+  accessKeyID: REPLACE_WITH_GARAGE_ACCESS_KEY
+  secretAccessKey: REPLACE_WITH_GARAGE_SECRET_KEY
+  useSSL: false
+  bucketName: milvus
+  rootPath: files
+  useVirtualHost: false
+  region: garage
+
+common:
+  storageType: remote
+
+proxy:
+  port: 19530
+rootCoord:
+  port: 53100
+dataCoord:
+  port: 13333
+queryCoord:
+  port: 19531
+queryNode:
+  port: 21123
+dataNode:
+  port: 21124
+indexCoord:
+  port: 31000
+indexNode:
+  port: 21121
