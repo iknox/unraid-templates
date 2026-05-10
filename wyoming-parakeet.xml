@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>wyoming-parakeet</Name>
+  <Repository>ghcr.io/tboby/wyoming-onnx-asr:v0.5.0</Repository>
+  <Registry>https://github.com/tboby/wyoming-onnx-asr/pkgs/container/wyoming-onnx-asr</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/tboby/wyoming-onnx-asr</Project>
+  <Overview>
+    [b]Wyoming Parakeet (STT)[/b] — speech-to-text via NVIDIA NeMo Parakeet-TDT 0.6B v2 running on CPU through ONNX Runtime, exposed over the Wyoming protocol so Home Assistant can use it as a Speech-to-Text engine.&#xD;
+    [br]&#xD;
+    [b]Model downloads on first run[/b] (~600 MB). With int8 quantization the footprint is smaller and CPU inference is significantly faster — set quantization in the [i]Model Quantization[/i] field (default int8).&#xD;
+    [br]&#xD;
+    [b]To use in Home Assistant:[/b] Settings → Devices &amp; services → Add integration → [i]Wyoming Protocol[/i] → host = Unraid IP, port = 10300.
+  </Overview>
+  <Category>HomeLab: Voice:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/wyoming-parakeet.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/parakeet.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs>--uri tcp://0.0.0.0:10300 --model-en nemo-parakeet-tdt-0.6b-v2 --quantization int8 --model-dir /data --device cpu</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>CPU-only ONNX implementation of NVIDIA NeMo Parakeet-TDT 0.6B v2, served over the Wyoming protocol. Pairs with any Wyoming TTS (e.g. Piper) behind Home Assistant Assist.</Description>
+  <Config Name="Wyoming Port" Target="10300" Default="10300" Mode="tcp" Description="Wyoming protocol TCP port — Home Assistant Wyoming integration connects here (tcp://UNRAID-IP:10300)." Type="Port" Display="always" Required="true" Mask="false">10300</Config>
+  <Config Name="Model Cache" Target="/data" Default="/mnt/cache/appdata/wyoming-parakeet" Mode="rw" Description="ONNX model cache. Models auto-download on first run (~600 MB). Cache pool recommended for SSD speed on reloads." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/wyoming-parakeet</Config>
+</Container>
