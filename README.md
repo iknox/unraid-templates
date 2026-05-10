@@ -57,6 +57,8 @@ CPU-only neural text-to-speech using Kokoro-ONNX, over Wyoming. Upstream chiabre
 
 Wires Garage + etcd + Milvus into a memory-search backend for the [zilliztech/memsearch](https://github.com/zilliztech/memsearch) Claude Code plugin (or any client that talks pymilvus). All three containers run on a shared Docker network and find each other by name.
 
+For a full deploy walkthrough with architecture diagram, operational notes, and a Troubleshooting + History appendix, see [**DEPLOY.md**](DEPLOY.md). Quick version below.
+
 ### 1. Create the shared Docker network (one-time)
 
 Unraid webUI → **Settings** → **Docker** → **Network Type** → **Add new network**:
