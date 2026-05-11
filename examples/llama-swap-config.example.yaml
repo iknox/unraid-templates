@@ -30,7 +30,7 @@ models:
       -m /models/Qwen3-30B-A3B-Instruct-2507-Q4_K_M.gguf
       -ngl 999
       -c 32768
-      --flash-attn
+      --flash-attn on
     ttl: 600
 
   # ── Dense 32B Q5 for when quality matters more than speed. ────────────
@@ -42,7 +42,7 @@ models:
       -m /models/Qwen2.5-32B-Instruct-Q5_K_M.gguf
       -ngl 999
       -c 8192
-      --flash-attn
+      --flash-attn on
     ttl: 300
 
   # ── Tiny smoke-test model. Proves the GPU path without loading weights. ─
@@ -53,5 +53,5 @@ models:
       -m /models/Llama-3.2-3B-Instruct-Q4_K_M.gguf
       -ngl 999
       -c 8192
-      --flash-attn
+      --flash-attn on
     ttl: 120
