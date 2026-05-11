@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>llama-server</Name>
+  <Repository>ghcr.io/ggml-org/llama.cpp:server-vulkan</Repository>
+  <Registry>https://github.com/ggml-org/llama.cpp/pkgs/container/llama.cpp</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/ggml-org/llama.cpp</Project>
+  <Overview>llama.cpp HTTP server with Vulkan GPU acceleration. OpenAI-compatible /v1/chat/completions endpoint, built-in WebUI, works on any GPU with Vulkan drivers — AMD (no ROCm needed), Intel Arc, NVIDIA.&#xD;[br]Point LLAMA_ARG_MODEL at a GGUF file in the Models dir. Set LLAMA_ARG_N_GPU_LAYERS=999 to offload everything to GPU. Strix Halo / unified-memory APUs can run 70B-class models thanks to shared VRAM.&#xD;[br]Download GGUF models into the Models path from HuggingFace (e.g. bartowski/* or unsloth/* repos).</Overview>
+  <Category>Tools: Productivity: AI:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/llama-server.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=milvus-net --device=/dev/dri --group-add=video --group-add=render</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>llama.cpp server with Vulkan backend. All tuning via LLAMA_ARG_* env vars — no custom PostArgs needed. For AMD Strix Halo / RDNA 3.5, Vulkan matches or beats ROCm on gfx1151 as of 2026 and requires no driver install.</Description>
+  <Config Name="HTTP / API" Target="8080" Default="8080" Mode="tcp" Description="OpenAI-compatible API and built-in WebUI. POST /v1/chat/completions; GET / for the WebUI." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF model files. Download into this dir with wget/curl from HuggingFace. Point LLAMA_ARG_MODEL at a file inside /models." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
+  <Config Name="LLAMA_ARG_MODEL" Target="LLAMA_ARG_MODEL" Default="/models/model.gguf" Description="Container path to the GGUF file to load. Example: /models/Qwen2.5-32B-Instruct-Q5_K_M.gguf" Type="Variable" Display="always" Required="true" Mask="false">/models/model.gguf</Config>
+  <Config Name="LLAMA_ARG_N_GPU_LAYERS" Target="LLAMA_ARG_N_GPU_LAYERS" Default="999" Description="Layers to offload to GPU. 999 = all (recommended). Lower only if the model doesn't fit in VRAM." Type="Variable" Display="always" Required="true" Mask="false">999</Config>
+  <Config Name="LLAMA_ARG_CTX_SIZE" Target="LLAMA_ARG_CTX_SIZE" Default="8192" Description="Context window in tokens. Bigger = more VRAM. 8192 is a safe default; push to 32768+ on large-memory hosts." Type="Variable" Display="always" Required="true" Mask="false">8192</Config>
+  <Config Name="LLAMA_ARG_FLASH_ATTN" Target="LLAMA_ARG_FLASH_ATTN" Default="1" Description="1 = enable flash attention (faster, less memory). 0 = disable. Some older GGUFs require 0." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
+  <Config Name="LLAMA_ARG_HOST" Target="LLAMA_ARG_HOST" Default="0.0.0.0" Description="Bind address. Leave as 0.0.0.0 for container networking." Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
+  <Config Name="LLAMA_ARG_PORT" Target="LLAMA_ARG_PORT" Default="8080" Description="HTTP server port inside the container. Must match the HTTP / API port mapping above." Type="Variable" Display="advanced" Required="true" Mask="false">8080</Config>
+  <Config Name="LLAMA_ARG_THREADS" Target="LLAMA_ARG_THREADS" Default="" Description="CPU threads for non-offloaded work. Blank = auto (physical core count). Override only when sharing CPU with other heavy containers." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="LLAMA_ARG_API_KEY" Target="LLAMA_ARG_API_KEY" Default="" Description="Optional bearer token required on all API requests. Blank = unauthenticated (fine on a trusted LAN)." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+</Container>
