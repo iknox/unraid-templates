@@ -29,6 +29,5 @@
   <Config Name="LLAMA_ARG_FLASH_ATTN" Target="LLAMA_ARG_FLASH_ATTN" Default="1" Description="1 = enable flash attention (faster, less memory). 0 = disable. Some older GGUFs require 0." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
   <Config Name="LLAMA_ARG_HOST" Target="LLAMA_ARG_HOST" Default="0.0.0.0" Description="Bind address. Leave as 0.0.0.0 for container networking." Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
   <Config Name="LLAMA_ARG_PORT" Target="LLAMA_ARG_PORT" Default="8080" Description="HTTP server port inside the container. Must match the HTTP / API port mapping above." Type="Variable" Display="advanced" Required="true" Mask="false">8080</Config>
-  <Config Name="LLAMA_ARG_THREADS" Target="LLAMA_ARG_THREADS" Default="" Description="CPU threads for non-offloaded work. Blank = auto (physical core count). Override only when sharing CPU with other heavy containers." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="LLAMA_ARG_API_KEY" Target="LLAMA_ARG_API_KEY" Default="" Description="Optional bearer token required on all API requests. Blank = unauthenticated (fine on a trusted LAN)." Type="Variable" Display="advanced" Required="false" Mask="true"/>
 </Container>
