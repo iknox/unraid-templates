@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/llama-server.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=milvus-net --device=/dev/dri --group-add=video --group-add=render</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=milvus-net --device=/dev/dri --group-add=video</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <DateInstalled/>
