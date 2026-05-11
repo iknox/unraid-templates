@@ -1,0 +1,57 @@
+# llama-swap starter config for castle (Strix Halo, Vulkan)
+#
+# Place at /mnt/user/appdata/llama-swap/config.yaml.
+# Edits hot-reload when the container is run with `-watch-config`.
+#
+# Ports: llama-swap listens on the container's 8080; each model's
+# llama-server child gets an internal port starting at 5800.
+# The ${PORT} macro below expands to that auto-assigned port.
+#
+# Full schema: https://github.com/mostlygeek/llama-swap/blob/main/config.example.yaml
+
+healthCheckTimeout: 120    # seconds to wait for a model to become ready
+startPort: 5800            # first internal port for llama-server children
+logLevel: info
+logRequests: false         # set true when debugging swap behaviour
+
+# Auto-unload idle models after 10 minutes. Override per-model with `ttl:`.
+# 0 = never unload.
+globalTTL: 600
+
+models:
+
+  # ── Fast, interactive-feel MoE. Daily driver. ─────────────────────────
+  # 30B total / 3B active. On Strix Halo this benches ~87 tok/s because
+  # only the 3B active weights stream from LPDDR5 per token.
+  qwen3-30b-a3b:
+    cmd: |
+      /app/llama-server
+      --host 0.0.0.0 --port ${PORT}
+      -m /models/Qwen3-30B-A3B-Instruct-2507-Q4_K_M.gguf
+      -ngl 999
+      -c 32768
+      --flash-attn
+    ttl: 600
+
+  # ── Dense 32B Q5 for when quality matters more than speed. ────────────
+  # Bandwidth-bound on Strix Halo → ~10 tok/s. Use for batch / async work.
+  qwen2.5-32b:
+    cmd: |
+      /app/llama-server
+      --host 0.0.0.0 --port ${PORT}
+      -m /models/Qwen2.5-32B-Instruct-Q5_K_M.gguf
+      -ngl 999
+      -c 8192
+      --flash-attn
+    ttl: 300
+
+  # ── Tiny smoke-test model. Proves the GPU path without loading weights. ─
+  llama-3.2-3b:
+    cmd: |
+      /app/llama-server
+      --host 0.0.0.0 --port ${PORT}
+      -m /models/Llama-3.2-3B-Instruct-Q4_K_M.gguf
+      -ngl 999
+      -c 8192
+      --flash-attn
+    ttl: 120

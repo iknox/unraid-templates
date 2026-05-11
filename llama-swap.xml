@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>llama-swap</Name>
+  <Repository>ghcr.io/mostlygeek/llama-swap:vulkan</Repository>
+  <Registry>https://github.com/mostlygeek/llama-swap/pkgs/container/llama-swap</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/mostlygeek/llama-swap</Project>
+  <Overview>Tiny reverse proxy that hot-swaps llama.cpp models on demand. Define many GGUFs in one config.yaml; llama-swap spawns the right llama-server process when a request names a model, keeps it warm, and unloads idle ones on a TTL. Supersedes the llama-server template for any setup with more than one model.&#xD;[br]Official image bundles llama-swap + llama.cpp:server-vulkan in one container, so Vulkan GPU acceleration works out of the box on AMD (no ROCm), Intel Arc, and NVIDIA.&#xD;[br]Drop your GGUFs into the Models dir, edit /config/config.yaml with one entry per model, and point any OpenAI-compatible client at http://UNRAID-IP:8080.</Overview>
+  <Category>Tools: Productivity: AI:</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/llama-swap.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=milvus-net --device=/dev/dri --group-add=video</ExtraParams>
+  <PostArgs>-config /config/config.yaml -watch-config</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>llama-swap is a lightweight YAML-driven proxy that forks llama-server processes on demand. One HTTP listener, many models, automatic unload on idle. The vulkan tag bundles ggml-org/llama.cpp:server-vulkan underneath so no extra inference container is needed.&#xD;[br]With -watch-config, edits to config.yaml reload live — no container restart to add or tune models.</Description>
+  <Config Name="HTTP / API" Target="8080" Default="8080" Mode="tcp" Description="OpenAI-compatible API plus llama-swap's own /logs, /running, /unload endpoints. llama-server children bind to internal ports starting at 5800." Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files referenced by config.yaml. Shared with the llama-server template by default so the same models work in both." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
+  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/llama-swap" Mode="rw" Description="Holds config.yaml. See the repo's config.example.yaml for the full schema. With -watch-config, edits hot-reload the model list." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama-swap</Config>
+</Container>
