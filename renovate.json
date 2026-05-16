@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    ":separateMajorReleases"
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "America/Los_Angeles",
+  "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "description": "Read Docker image references from Unraid template <Repository> tags.",
+      "customType": "regex",
+      "fileMatch": ["^[^/]+\\.xml$"],
+      "matchStrings": [
+        "<Repository>(?<depName>[^:<\\s]+):(?<currentValue>[^<\\s]+)</Repository>"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Group all template image bumps in one weekly PR by default.",
+      "matchManagers": ["custom.regex"],
+      "groupName": "unraid template images"
+    },
+    {
+      "description": "NEVER auto-merge Milvus, ever. We pin v2.6.15 deliberately because earlier bumps re-introduced known bugs (port collision, stats-config panic, kafka MQ default). Reviewing each bump against the deploy doc is mandatory.",
+      "matchPackageNames": ["milvusdb/milvus"],
+      "automerge": false,
+      "minimumReleaseAge": "7 days",
+      "labels": ["dependencies", "milvus-review-required"]
+    },
+    {
+      "description": "etcd patch updates are typically safe; allow auto-merge after a soak period.",
+      "matchPackageNames": ["quay.io/coreos/etcd"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "wyoming-onnx-asr (parakeet) patch+minor are usually safe.",
+      "matchPackageNames": ["ghcr.io/tboby/wyoming-onnx-asr"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Our own wrapper images — :main is a moving tag we manage in unraid-images, do not let Renovate try to bump these.",
+      "matchPackageNames": ["ghcr.io/iknox/garage-env", "ghcr.io/iknox/wyoming-kokoro-cpu"],
+      "enabled": false
+    },
+    {
+      "description": "NEVER auto-merge majors anywhere.",
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-upgrade-review"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "automerge": false
+  }
+}
