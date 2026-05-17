@@ -13,6 +13,7 @@ These Unraid container templates were written to stand up a backend for [memsear
 | `wyoming-kokoro`   | Text-to-speech over the Wyoming protocol. Kokoro-ONNX, CPU.             |
 | `llama-swap`       | Multi-model proxy with llama.cpp baked in. Define many GGUFs in one YAML, hot-swap on demand. Vulkan GPU acceleration; no separate llama.cpp container needed. |
 | `claude-code-router` | Anthropic↔OpenAI translating proxy. Lets Claude Code (and any other Anthropic-API client) drive a local OpenAI-compatible model like `llama-swap`. |
+| `searxng`          | Self-hosted metasearch engine. Aggregates Google/Bing/DDG/Brave results without giving them your IP. JSON output pre-enabled for use as an MCP search backend. |
 
 ## Install
 

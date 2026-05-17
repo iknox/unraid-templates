@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>searxng</Name>
+  <Repository>searxng/searxng:latest</Repository>
+  <Registry>https://hub.docker.com/r/searxng/searxng</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/searxng/searxng</Project>
+  <Overview>Self-hosted privacy-respecting metasearch engine. Aggregates results from Google, Bing, DuckDuckGo, Brave, etc., without any of them seeing your IP. JSON output is enabled in the seeded config so this works as a search backend for MCP servers (mcp-searxng), GPT-Researcher, or any LLM-side research workflow.&#xD;[br]On first boot the template wgets a starter settings.yml with JSON output, generates a unique SEARXNG_SECRET, and persists it. Edits to settings.yml hot-reload after a container restart.</Overview>
+  <Category>Tools: AI:</Category>
+  <WebUI>http://[IP]:[PORT:8888]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/searxng.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/searxng.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --cap-drop=ALL --cap-add=CHOWN --cap-add=SETGID --cap-add=SETUID --entrypoint=/bin/sh</ExtraParams>
+  <PostArgs>-c "d=/etc/searxng; mkdir -p $d; [ ! -f $d/settings.yml ] &amp;&amp; wget -qO $d/settings.yml https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/searxng.settings.yml &amp;&amp; echo '[init] seeded settings.yml'; [ ! -f $d/.secret ] &amp;&amp; head -c 32 /dev/urandom | base64 &gt; $d/.secret &amp;&amp; echo '[init] generated SEARXNG_SECRET'; export SEARXNG_SECRET=$(cat $d/.secret); exec /usr/local/searxng/container/entrypoint.sh"</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>SearXNG is the modern fork of Searx. Acts as a proxy that queries multiple search engines simultaneously and merges results, so you get Google-quality results without giving Google your queries.&#xD;[br]Wired up here for use as an MCP backend on castle's local-ai network. mcp-searxng (running as stdio from your client machine) talks to this container's JSON API and exposes searxng_web_search + web_url_read to Claude Code or any other MCP-compatible LLM client.</Description>
+  <Config Name="HTTP / API" Target="8080" Default="8888" Mode="tcp" Description="Web UI plus JSON API endpoint at /search?format=json. mcp-searxng will hit this URL." Type="Port" Display="always" Required="true" Mask="false">8888</Config>
+  <Config Name="Config dir" Target="/etc/searxng" Default="/mnt/user/appdata/searxng" Mode="rw" Description="Holds settings.yml and the persisted .secret file. Edit settings.yml here to tune enabled engines, safe_search, language, etc." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/searxng</Config>
+  <Config Name="BASE_URL" Target="SEARXNG_BASE_URL" Default="" Description="Public URL of this instance, only needed if you want correct shareable links from the web UI. Leave blank for LAN-only use." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+</Container>

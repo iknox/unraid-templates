@@ -1,0 +1,33 @@
+# Minimal SearXNG settings.yml for use as an MCP search backend on a LAN.
+#
+# Diffs from upstream defaults:
+#   - search.formats includes "json" (required by mcp-searxng / GPT-Researcher /
+#     anything that wants structured search results — defaults are HTML-only)
+#   - server.bind_address: 0.0.0.0 (defaults to 127.0.0.1, won't accept
+#     traffic from the docker bridge)
+#   - server.limiter: false (the bot-protection limiter is overzealous on a
+#     LAN; queries from your own MCP server look bot-shaped)
+#   - server.image_proxy: false (the proxy adds latency on a LAN search engine
+#     that's never going to be embedded in third-party pages)
+#
+# secret_key is set via the SEARXNG_SECRET env var — the template generates
+# one on first boot and persists it to /etc/searxng/.secret. Don't hardcode
+# a real secret here.
+#
+# To tune enabled engines, safe_search, etc., edit this file directly and
+# restart the container — see https://docs.searxng.org/admin/settings/
+
+use_default_settings: true
+
+search:
+  formats:
+    - html
+    - json
+
+server:
+  bind_address: "0.0.0.0"
+  limiter: false
+  image_proxy: false
+
+ui:
+  static_use_hash: true
