@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/llama-swap.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=milvus-net --device=/dev/dri --group-add=video</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --group-add=video</ExtraParams>
   <PostArgs>-config /config/config.yaml -watch-config</PostArgs>
   <CPUset/>
   <DateInstalled/>

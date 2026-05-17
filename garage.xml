@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/garage.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/garage.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=milvus-net</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=local-ai</ExtraParams>
   <PostArgs>server</PostArgs>
   <CPUset/>
   <DateInstalled/>

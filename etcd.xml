@@ -14,7 +14,7 @@
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/etcd.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/etcd.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=milvus-net</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=local-ai</ExtraParams>
   <PostArgs>etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd</PostArgs>
   <CPUset/>
   <DateInstalled/>

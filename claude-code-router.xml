@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:3456]/ui/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/claude-code-router.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/claude-code-router.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=milvus-net --entrypoint=/bin/sh</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --entrypoint=/bin/sh</ExtraParams>
   <PostArgs>-c "f=/root/.claude-code-router/config.json; [ ! -f $f ] &amp;&amp; mkdir -p /root/.claude-code-router &amp;&amp; wget -qO $f https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.config.json &amp;&amp; echo '[init] seeded config.json'; exec pm2-runtime start /app/ecosystem.config.cjs"</PostArgs>
   <CPUset/>
   <DateInstalled/>

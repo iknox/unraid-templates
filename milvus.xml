@@ -14,7 +14,7 @@
   <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/milvus.png</Icon>
-  <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined --network=milvus-net</ExtraParams>
+  <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined --network=local-ai</ExtraParams>
   <PostArgs>milvus run standalone</PostArgs>
   <CPUset/>
   <DateInstalled/>
@@ -27,13 +27,13 @@
   <Config Name="MINIO_ACCESS_KEY_ID" Target="MINIO_ACCESS_KEY_ID" Default="" Description="Garage access key ID from 'garage key info --show-secret milvus-key'." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="MINIO_SECRET_ACCESS_KEY" Target="MINIO_SECRET_ACCESS_KEY" Default="" Description="Garage secret key from 'garage key info --show-secret milvus-key'." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="ETCD_ENDPOINTS" Target="ETCD_ENDPOINTS" Default="etcd:2379" Description="Container name:port of etcd on the shared Docker network. Default works with the paired etcd template." Type="Variable" Display="advanced" Required="true" Mask="false">etcd:2379</Config>
-  <Config Name="MINIO_ADDRESS" Target="MINIO_ADDRESS" Default="garage" Description="Hostname of the S3-compatible store (container name on milvus-net)." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
+  <Config Name="MINIO_ADDRESS" Target="MINIO_ADDRESS" Default="garage" Description="Hostname of the S3-compatible store (container name on local-ai)." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
   <Config Name="MINIO_PORT" Target="MINIO_PORT" Default="3900" Description="S3 API port on the Garage container." Type="Variable" Display="advanced" Required="true" Mask="false">3900</Config>
   <Config Name="MINIO_BUCKET_NAME" Target="MINIO_BUCKET_NAME" Default="milvus" Description="Bucket name created in Garage (matches the 'garage bucket create' command)." Type="Variable" Display="advanced" Required="true" Mask="false">milvus</Config>
   <Config Name="MINIO_ROOT_PATH" Target="MINIO_ROOT_PATH" Default="files" Description="Prefix inside the bucket for all Milvus objects." Type="Variable" Display="advanced" Required="true" Mask="false">files</Config>
   <Config Name="MINIO_REGION" Target="MINIO_REGION" Default="garage" Description="Must match Garage's GARAGE_S3_REGION. SigV4 rejects mismatches with 'AuthorizationHeaderMalformed'." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
   <Config Name="MINIO_USE_VIRTUAL_HOST" Target="MINIO_USE_VIRTUAL_HOST" Default="false" Description="Path-style S3 addressing. Must be false for Garage (no wildcard DNS in our setup)." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
-  <Config Name="MINIO_USE_SSL" Target="MINIO_USE_SSL" Default="false" Description="Plain HTTP within milvus-net. Set true only if Garage is behind HTTPS." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
+  <Config Name="MINIO_USE_SSL" Target="MINIO_USE_SSL" Default="false" Description="Plain HTTP within local-ai. Set true only if Garage is behind HTTPS." Type="Variable" Display="advanced" Required="true" Mask="false">false</Config>
   <Config Name="COMMON_STORAGE_TYPE" Target="COMMON_STORAGE_TYPE" Default="remote" Description="Use remote object storage (Garage) vs local filesystem." Type="Variable" Display="advanced" Required="true" Mask="false">remote</Config>
   <Config Name="MQ_TYPE" Target="MQ_TYPE" Default="rocksmq" Description="Message queue backend. MUST be rocksmq for standalone — default is kafka which fails to connect." Type="Variable" Display="advanced" Required="true" Mask="false">rocksmq</Config>
   <Config Name="LOCAL_STORAGE_PATH" Target="LOCAL_STORAGE_PATH" Default="/var/lib/milvus/data" Description="Inside-container path for segment cache. Must be explicit — empty default causes QueryNode FATAL." Type="Variable" Display="advanced" Required="true" Mask="false">/var/lib/milvus/data</Config>

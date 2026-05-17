@@ -19,7 +19,7 @@ For the standalone service docs, see [README.md](README.md).
                                         │   └─ garage (:3900 internal)     │
                                         │       (S3-compatible store)      │
                                         │                                  │
-                                        │ All three on the milvus-net      │
+                                        │ All three on the local-ai net    │
                                         │ user-defined Docker bridge,      │
                                         │ resolving each other by name.    │
                                         └──────────────────────────────────┘
@@ -28,7 +28,7 @@ For the standalone service docs, see [README.md](README.md).
 - **Garage** holds the actual vector chunk bytes (objects in an S3 bucket).
 - **etcd** holds Milvus's metadata and leader-election state.
 - **Milvus** is the vector DB — clients talk to it on TCP 19530.
-- **milvus-net** is a user-defined Docker bridge; DNS by container name only works on user-defined bridges, not the default `bridge`.
+- **local-ai** is a user-defined Docker bridge; DNS by container name only works on user-defined bridges, not the default `bridge`. (Originally named `milvus-net` in older templates — this network now hosts more than Milvus, hence the rename.)
 
 ---
 
@@ -57,7 +57,7 @@ Refresh the Apps page. The templates appear under the **Private Apps** filter.
 
 Unraid webUI → **Settings** → **Docker** → **Network Type** → **Add new network**:
 
-- **Name:** `milvus-net`
+- **Name:** `local-ai`
 - **Driver:** bridge
 - **Subnet:** any free private range — `172.28.0.0/16` works
 - Leave IPv6, gateway, iprange blank
@@ -117,7 +117,7 @@ The `garage` CLI here is a wrapper we install inside the image that auto-injects
 
 ### Step 3: etcd
 
-Apps → **Private Apps** → **etcd** → Install. Zero configuration needed; defaults handle Milvus-friendly auto-compaction. No ports are published to the host — Milvus reaches etcd at `etcd:2379` over `milvus-net`.
+Apps → **Private Apps** → **etcd** → Install. Zero configuration needed; defaults handle Milvus-friendly auto-compaction. No ports are published to the host — Milvus reaches etcd at `etcd:2379` over `local-ai`.
 
 Data persists at `/mnt/user/appdata/etcd`.
 
@@ -315,7 +315,7 @@ The directory under `/boot/config/plugins/community.applications/private/` must 
 
 ### Network declaration in templates
 
-Unraid's `<Network>` XML field expects one of: `bridge`, `host`, `none`, or the name of a Docker network that already exists on the host *and* has been registered in Unraid's known-networks list. Putting a custom network name like `milvus-net` directly in `<Network>` silently makes the Install button a no-op — CA's form builder can't resolve the dropdown option. The working pattern is `<Network>bridge</Network>` + `<ExtraParams>--network=milvus-net</ExtraParams>`, which is what these templates use.
+Unraid's `<Network>` XML field expects one of: `bridge`, `host`, `none`, or the name of a Docker network that already exists on the host *and* has been registered in Unraid's known-networks list. Putting a custom network name like `local-ai` directly in `<Network>` silently makes the Install button a no-op — CA's form builder can't resolve the dropdown option. The working pattern is `<Network>bridge</Network>` + `<ExtraParams>--network=local-ai</ExtraParams>`, which is what these templates use.
 
 ### memsearch issue #534
 
