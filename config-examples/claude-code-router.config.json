@@ -5,20 +5,21 @@
       "HOST": "http://llama-swap:8080/v1",
       "APIKEY": "dummy",
       "MODELS": [
-        "qwen3-coder-next",
-        "qwen3.6-35b-mtp"
+        "qwen3-coder-next_CODE",
+        "qwen3.6-35b-mtp_GEN_PURPOSE",
+        "llama-3.2-3b_TEST"
       ],
       "transformers": ["anthropic"]
     }
   ],
   "Router": {
-    "default":     "llamaswap,qwen3-coder-next",
-    "background":  "llamaswap,qwen3-coder-next",
-    "think":       "llamaswap,qwen3-coder-next",
-    "longContext": "llamaswap,qwen3.6-35b-mtp",
+    "default":     "llamaswap,qwen3-coder-next_CODE",
+    "background":  "llamaswap,qwen3-coder-next_CODE",
+    "think":       "llamaswap,qwen3-coder-next_CODE",
+    "longContext": "llamaswap,qwen3.6-35b-mtp_GEN_PURPOSE",
     "longContextThreshold": 30000
   },
   "fallback": {
-    "default": ["llamaswap,qwen3-coder-next"]
+    "default": ["llamaswap,qwen3-coder-next_CODE"]
   }
 }
