@@ -15,7 +15,7 @@
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/searxng.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/searxng.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --cap-drop=ALL --cap-add=CHOWN --cap-add=SETGID --cap-add=SETUID --entrypoint=/bin/sh</ExtraParams>
-  <PostArgs>-c "d=/etc/searxng; mkdir -p $d; [ ! -f $d/settings.yml ] &amp;&amp; wget -qO $d/settings.yml https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/searxng.settings.yml &amp;&amp; echo '[init] seeded settings.yml'; [ ! -f $d/.secret ] &amp;&amp; head -c 32 /dev/urandom | base64 &gt; $d/.secret &amp;&amp; echo '[init] generated SEARXNG_SECRET'; export SEARXNG_SECRET=$(cat $d/.secret); exec /usr/local/searxng/container/entrypoint.sh"</PostArgs>
+  <PostArgs>-c "d=/etc/searxng; mkdir -p $d; [ ! -f $d/settings.yml ] &amp;&amp; wget -qO $d/settings.yml https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/searxng.settings.yml &amp;&amp; echo '[init] seeded settings.yml'; [ ! -f $d/.secret ] &amp;&amp; head -c 32 /dev/urandom | base64 &gt; $d/.secret &amp;&amp; echo '[init] generated SEARXNG_SECRET'; export SEARXNG_SECRET=$(cat $d/.secret); exec /usr/local/searxng/entrypoint.sh"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
