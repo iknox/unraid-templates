@@ -1,6 +1,13 @@
-# Deploying the memsearch backend on Unraid
+# Deploying on Unraid
 
-End-to-end recipe for the three-container [memsearch](https://github.com/zilliztech/memsearch) backend: **Garage** (S3) + **etcd** + **Milvus**. Targets an Unraid user comfortable with Docker and the Community Applications plugin.
+End-to-end recipes for the homelab stacks in this repo. Targets an Unraid user comfortable with Docker and the Community Applications plugin.
+
+Two stacks live here, on the same Docker bridge (`local-ai`) but otherwise independent:
+
+- **memsearch backend** — three containers (Garage + etcd + Milvus) for the [memsearch](https://github.com/zilliztech/memsearch) semantic memory store.
+- **Local AI** — two containers (llama-swap + claude-code-router) that let Claude Code drive a local Qwen-class model instead of Anthropic's API.
+
+You can install either or both. They share the `local-ai` network for DNS-by-name but don't depend on each other.
 
 For the standalone service docs, see [README.md](README.md).
 
@@ -9,34 +16,41 @@ For the standalone service docs, see [README.md](README.md).
 ## Architecture
 
 ```
-  Your Mac / workstation                Unraid host
-  ┌─────────────────────────┐           ┌──────────────────────────────────┐
-  │ Claude Code             │           │                                  │
-  │   └─ memsearch plugin ──┼── gRPC ──▶│ milvus (:19530, :9091)           │
-  │       (SessionStart     │ 19530     │   │                              │
-  │        hook)            │           │   ├─ etcd (:2379 internal)       │
-  └─────────────────────────┘           │   │                              │
-                                        │   └─ garage (:3900 internal)     │
-                                        │       (S3-compatible store)      │
-                                        │                                  │
-                                        │ All three on the local-ai net    │
-                                        │ user-defined Docker bridge,      │
-                                        │ resolving each other by name.    │
-                                        └──────────────────────────────────┘
+  Your Mac / workstation              Unraid host (`local-ai` Docker bridge)
+  ┌─────────────────────────┐         ┌────────────────────────────────────────┐
+  │ Claude Code             │         │ Local AI                               │
+  │   ├─ direct LLM ────────┼── HTTP ─┼─▶ claude-code-router (:3456)           │
+  │   │  (ANTHROPIC_BASE_   │  /v1/   │     │ Anthropic ↔ OpenAI translation   │
+  │   │   URL → :3456)      │  msgs   │     ▼                                  │
+  │   │                     │         │   llama-swap (:8080)                   │
+  │   │                     │         │     │ multi-model proxy                │
+  │   │                     │         │     ▼                                  │
+  │   │                     │         │   llama-server (Vulkan, in-container)  │
+  │   │                     │         │                                        │
+  │   └─ memsearch plugin ──┼── gRPC ─┼─▶ milvus (:19530, :9091)               │
+  │       (SessionStart     │ 19530   │     ├─ etcd (:2379)                    │
+  │        hook)            │         │     └─ garage (:3900)                  │
+  └─────────────────────────┘         └────────────────────────────────────────┘
 ```
 
+**Local AI stack:**
+- **claude-code-router** translates Anthropic `/v1/messages` ↔ OpenAI `/v1/chat/completions` so Claude Code can drive the local model.
+- **llama-swap** spawns llama-server processes per model on demand, with a baked-in Vulkan-accelerated llama.cpp.
+
+**memsearch backend:**
 - **Garage** holds the actual vector chunk bytes (objects in an S3 bucket).
 - **etcd** holds Milvus's metadata and leader-election state.
 - **Milvus** is the vector DB — clients talk to it on TCP 19530.
-- **local-ai** is a user-defined Docker bridge; DNS by container name only works on user-defined bridges, not the default `bridge`. (Originally named `milvus-net` in older templates — this network now hosts more than Milvus, hence the rename.)
+
+**`local-ai`** is a user-defined Docker bridge; DNS by container name only works on user-defined bridges, not the default `bridge`. All five containers live on it. (Originally named `milvus-net` in older templates — this network now hosts more than Milvus, hence the rename.)
 
 ---
 
 ## Prerequisites
 
 - Unraid 6.12+ with Community Applications plugin installed.
-- At least ~2 GB free RAM and ~1 GB free storage for the stack (plus headroom for your memory corpus).
-- `memsearch` installed on whatever client machine you want to point at the backend. See the [memsearch README](https://github.com/zilliztech/memsearch). If you're using the Claude Code plugin, see the notes at the end of this doc.
+- For **memsearch**: ~2 GB free RAM, ~1 GB storage (plus your corpus). `memsearch` installed on the client; see [memsearch README](https://github.com/zilliztech/memsearch) and the Claude Code plugin notes below.
+- For **Local AI**: a Vulkan-capable GPU (AMD, Intel Arc, or NVIDIA), ~20 GB free disk for the daily-driver model, ~30 GB+ free GPU-addressable memory. Claude Code installed on the client.
 
 ---
 
@@ -77,7 +91,76 @@ If you don't have a cache pool yet, put everything on the array. You can reconfi
 
 ---
 
-## Install order
+## Stack: Local AI (llama-swap + claude-code-router)
+
+Skip this section if you only want memsearch.
+
+What you get: a local OpenAI-compatible inference endpoint at `http://UNRAID-IP:8080`, fronted by an Anthropic↔OpenAI translating proxy at `http://UNRAID-IP:3456`. Claude Code on your Mac points `ANTHROPIC_BASE_URL` at the proxy and uses the local model in place of Anthropic's API.
+
+### Step 1: llama-swap
+
+Apps → **Private Apps** → **llama-swap** → Install. Defaults are sane:
+
+- HTTP / API: `8080`
+- Models: `/mnt/user/appdata/llama.cpp/models`
+- Config: `/mnt/user/appdata/llama-swap`
+
+On first boot the template auto-downloads a starter `config.yaml` from this repo with three model entries: a tiny smoke-test (`llama-3.2-3b_TEST`), a daily-driver coder (`qwen3-coder-30b_CODE`), and a parked general-purpose entry (`qwen3.6-35b-mtp_GEN_PURPOSE`). Edits to the config hot-reload — no container restart needed.
+
+You then need to actually drop GGUF files into the Models dir. The seed config expects:
+
+```bash
+mkdir -p /mnt/user/appdata/llama.cpp/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
+cd /mnt/user/appdata/llama.cpp/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
+wget -O Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf \
+  "https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf?download=true"
+```
+
+(That's the 17.7 GB Q4 daily driver. The smoke-test 3B is ~1.9 GB from `unsloth/Llama-3.2-3B-Instruct-GGUF`. The 35B-MTP is currently broken upstream — see config comments.)
+
+Verify by hitting the model list:
+
+```bash
+curl -sf http://UNRAID-IP:8080/v1/models | jq -r '.data[].id'
+```
+
+### Step 2: claude-code-router
+
+Apps → **Private Apps** → **claude-code-router** → Install.
+
+**Required: APIKEY field.** CCR refuses to bind to `0.0.0.0` (i.e. accept LAN traffic) unless an APIKEY is set, as a guard against accidentally exposing an unauthenticated proxy. Generate one before pasting:
+
+```bash
+openssl rand -hex 32
+```
+
+Paste the result into the **APIKEY** field on the install form. Save the value somewhere — you'll set it as `CCROUTER_API` on your Mac shell to authenticate Claude Code requests.
+
+On first boot the template auto-downloads `config.json` and `strip-cch.js` from this repo. The strip-cch.js is a CCR custom router that strips Claude Code's per-request `cch=<hex>` cache-bust hash from the system prompt — without it, every Claude Code turn forces the local model to reprocess ~40K tokens, making interactive use unusable. The seed config wires it in via `CUSTOM_ROUTER_PATH` automatically.
+
+### Step 3: Point Claude Code at the local stack
+
+On your Mac shell:
+
+```bash
+export CCROUTER_API='<the APIKEY value from Step 2>'
+export ANTHROPIC_BASE_URL=http://UNRAID-IP:3456
+export ANTHROPIC_AUTH_TOKEN="$CCROUTER_API"
+```
+
+`claude` now routes through the local stack. First turn cold-loads the model (~30-60s). Second turn onwards should respond in seconds.
+
+### What "good" looks like
+
+```bash
+docker logs llama-swap --tail 20 2>&1 | grep -E "prompt eval|cache_n"
+```
+
+You want to see `cache_n` increasing turn-over-turn. If every turn shows `cache_n: 0`, the cch-strip isn't loaded — confirm `/mnt/user/appdata/claude-code-router/strip-cch.js` exists and that the seeded `config.json` has `"CUSTOM_ROUTER_PATH": "/root/.claude-code-router/strip-cch.js"`.
+
+---
+
+## Stack: memsearch backend (Garage + etcd + Milvus)
 
 ### Step 1: Garage
 
@@ -148,7 +231,7 @@ Wait values ensure Garage and etcd are fully up before Milvus tries to connect.
 
 ---
 
-## Smoke test
+## Smoke test (memsearch)
 
 From any machine that can reach the Unraid host on port 19530:
 
@@ -196,11 +279,13 @@ All images pin explicit tags. To pick up security updates:
 
 - **Garage wrapper** (`ghcr.io/iknox/garage-env:main`) rebuilds automatically on every push to `main` in the upstream [iknox/garage-env](https://github.com/iknox/garage-env) repo. Unraid's CA update check will flag available updates; click Update in the UI to pull and recreate the container. Persisted state survives.
 - **Milvus** is pinned to `milvusdb/milvus:v2.6.15` in the template. To bump: edit the template in the Unraid UI and change the Repository tag. Note the known bugs in the Troubleshooting appendix before upgrading major versions.
-- **etcd** is pinned to `quay.io/coreos/etcd:v3.5.25`. Rare need to upgrade.
+- **etcd** is pinned to `quay.io/coreos/etcd:v3.6.11`. Rare need to upgrade.
+- **claude-code-router** is pinned to `musistudio/claude-code-router:2.0.0`. Schema mutates between releases — eyeball the release notes against `config-examples/claude-code-router.config.json` before bumping. Renovate raises a PR but never auto-merges; review each one.
+- **llama-swap** uses `:vulkan` (a moving tag rebuilt by upstream as new llama.cpp releases land). To pick up a new llama.cpp build, click Update in the Unraid UI; container restarts with the new image. Edits to your `config.yaml` survive (volume-mounted).
 
 ### Resetting the stack
 
-Order matters:
+**memsearch backend** — order matters:
 
 ```bash
 docker stop milvus && docker rm milvus
@@ -212,6 +297,19 @@ rm -rf /mnt/user/appdata/garage/* \
 ```
 
 Then reinstall from Apps → Private Apps in the original order.
+
+**Local AI** — order doesn't matter (no inter-state):
+
+```bash
+docker stop claude-code-router && docker rm claude-code-router
+docker stop llama-swap && docker rm llama-swap
+rm -rf /mnt/user/appdata/claude-code-router/* \
+       /mnt/user/appdata/llama-swap/*
+# Models in /mnt/user/appdata/llama.cpp/models/ are 17GB+ each; keep them
+# unless you really mean to re-download.
+```
+
+Reinstall from Apps. Both templates auto-seed their config on first boot from this repo. **You will need to set a fresh APIKEY on the CCR install form** (and update `CCROUTER_API` on your Mac shell to match).
 
 ### Backups
 
