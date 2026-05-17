@@ -1,0 +1,24 @@
+{
+  "Providers": [
+    {
+      "NAME": "llamaswap",
+      "HOST": "http://llama-swap:8080/v1",
+      "APIKEY": "dummy",
+      "MODELS": [
+        "qwen3-coder-next",
+        "qwen3.6-35b-mtp"
+      ],
+      "transformers": ["anthropic"]
+    }
+  ],
+  "Router": {
+    "default":     "llamaswap,qwen3-coder-next",
+    "background":  "llamaswap,qwen3-coder-next",
+    "think":       "llamaswap,qwen3-coder-next",
+    "longContext": "llamaswap,qwen3.6-35b-mtp",
+    "longContextThreshold": 30000
+  },
+  "fallback": {
+    "default": ["llamaswap,qwen3-coder-next"]
+  }
+}
