@@ -14,8 +14,8 @@
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/llama-swap.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
-  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --group-add=video</ExtraParams>
-  <PostArgs>-config /config/config.yaml -watch-config</PostArgs>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --group-add=video --entrypoint=/bin/sh</ExtraParams>
+  <PostArgs>-c "f=/config/config.yaml; mkdir -p /config; [ ! -f $f ] &amp;&amp; wget -qO $f https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/llama-swap.config.yaml &amp;&amp; echo '[init] seeded config.yaml'; exec /app/llama-swap -config /config/config.yaml -watch-config"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>

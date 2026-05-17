@@ -11,8 +11,8 @@ These Unraid container templates were written to stand up a backend for [memsear
 | `milvus`           | Vector database (Standalone mode). Needs S3 + etcd.                     |
 | `wyoming-parakeet` | Speech-to-text over the Wyoming protocol. NVIDIA Parakeet-TDT, CPU.     |
 | `wyoming-kokoro`   | Text-to-speech over the Wyoming protocol. Kokoro-ONNX, CPU.             |
-| `llama-server`     | llama.cpp HTTP server with Vulkan GPU acceleration. Runs GGUF models with an OpenAI-compatible API. |
-| `llama-swap`       | Multi-model proxy on top of llama.cpp. Defines many GGUFs in one YAML, hot-swaps on demand. Supersedes `llama-server` for more than one model. |
+| `llama-swap`       | Multi-model proxy with llama.cpp baked in. Define many GGUFs in one YAML, hot-swap on demand. Vulkan GPU acceleration; no separate llama.cpp container needed. |
+| `claude-code-router` | Anthropic↔OpenAI translating proxy. Lets Claude Code (and any other Anthropic-API client) drive a local OpenAI-compatible model like `llama-swap`. |
 
 ## Install
 
