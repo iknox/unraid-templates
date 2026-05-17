@@ -8,17 +8,17 @@
       "api_base_url": "http://llama-swap:8080/v1/chat/completions",
       "api_key": "dummy",
       "models": [
-        "qwen3-coder-next_CODE",
+        "qwen3-coder-30b_CODE",
         "qwen3.6-35b-mtp_GEN_PURPOSE",
         "llama-3.2-3b_TEST"
       ]
     }
   ],
   "Router": {
-    "default":     "llamaswap,qwen3-coder-next_CODE",
-    "background":  "llamaswap,qwen3-coder-next_CODE",
-    "think":       "llamaswap,qwen3-coder-next_CODE",
-    "longContext": "llamaswap,qwen3.6-35b-mtp_GEN_PURPOSE",
-    "longContextThreshold": 30000
-  }
+    "default":     "llamaswap,qwen3-coder-30b_CODE",
+    "background":  "llamaswap,qwen3-coder-30b_CODE",
+    "think":       "llamaswap,qwen3-coder-30b_CODE",
+    "longContext": "llamaswap,qwen3-coder-30b_CODE"
+  },
+  "CUSTOM_ROUTER_PATH": "/root/.claude-code-router/strip-cch.js"
 }
