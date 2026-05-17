@@ -13,7 +13,9 @@
     {
       "description": "Read Docker image references from Unraid template <Repository> tags.",
       "customType": "regex",
-      "fileMatch": ["^[^/]+\\.xml$"],
+      "managerFilePatterns": [
+        "/^[^/]+\\.xml$/"
+      ],
       "matchStrings": [
         "<Repository>(?<depName>[^:<\\s]+):(?<currentValue>[^<\\s]+)</Repository>"
       ],
