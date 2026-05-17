@@ -9,20 +9,20 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://github.com/musistudio/claude-code-router</Project>
-  <Overview>Claude Code Router (CCR) — translates Anthropic-API requests into OpenAI-compatible requests so Claude Code can drive any local model (llama-server, llama-swap, vLLM, Ollama, etc.) as if it were Claude. Web UI at port 3456 for live config and routing inspection.&#xD;[br]Default config in this template points at a local llama-swap on the same Docker network. Edit /app/.claude-code-router/config.json to map scenarios (default, think, longContext, background) onto specific upstream models.</Overview>
+  <Overview>Claude Code Router (CCR) — translates Anthropic-API requests into OpenAI-compatible requests so Claude Code can drive any local model (llama-server, llama-swap, vLLM, Ollama, etc.) as if it were Claude. Web UI at port 3456 for live config and routing inspection.&#xD;[br]Default config in this template points at a local llama-swap on the same Docker network. Edit /root/.claude-code-router/config.json to map scenarios (default, think, longContext, background) onto specific upstream models.</Overview>
   <Category>Tools: AI:</Category>
   <WebUI>http://[IP]:[PORT:3456]/ui/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/claude-code-router.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/claude-code-router.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=milvus-net --entrypoint=/bin/sh</ExtraParams>
-  <PostArgs>-c "f=/app/.claude-code-router/config.json; [ ! -f $f ] &amp;&amp; mkdir -p /app/.claude-code-router &amp;&amp; wget -qO $f https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.config.json &amp;&amp; echo '[init] seeded config.json'; exec pm2-runtime start /app/ecosystem.config.cjs"</PostArgs>
+  <PostArgs>-c "f=/root/.claude-code-router/config.json; [ ! -f $f ] &amp;&amp; mkdir -p /root/.claude-code-router &amp;&amp; wget -qO $f https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.config.json &amp;&amp; echo '[init] seeded config.json'; exec pm2-runtime start /app/ecosystem.config.cjs"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
   <Description>CCR sits between Claude Code and your local OpenAI-compatible inference server. Inbound /v1/messages (Anthropic) → outbound /v1/chat/completions (OpenAI), with bidirectional translation of tool_use, reasoning blocks, and streaming SSE.</Description>
   <Config Name="API" Target="3456" Default="3456" Mode="tcp" Description="HTTP API + Web UI port. Set ANTHROPIC_BASE_URL=http://UNRAID-IP:3456 in your Claude Code shell." Type="Port" Display="always" Required="true" Mask="false">3456</Config>
-  <Config Name="Config dir" Target="/app/.claude-code-router" Default="/mnt/user/appdata/claude-code-router" Mode="rw" Description="Holds config.json and rotating logs. Edit config.json to add upstream providers and route scenarios." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/claude-code-router</Config>
+  <Config Name="Config dir" Target="/root/.claude-code-router" Default="/mnt/user/appdata/claude-code-router" Mode="rw" Description="Holds config.json and rotating logs. Edit config.json to add upstream providers and route scenarios." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/claude-code-router</Config>
   <Config Name="HOST" Target="HOST" Default="0.0.0.0" Description="Bind address inside the container. 0.0.0.0 to accept LAN traffic." Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
   <Config Name="PORT" Target="PORT" Default="3456" Description="In-container listen port. Match the published port above." Type="Variable" Display="advanced" Required="true" Mask="false">3456</Config>
   <Config Name="APIKEY" Target="APIKEY" Default="" Description="Token clients must present (Authorization: Bearer ...). Leave blank to disable auth on a trusted LAN; set a strong value if exposing beyond." Type="Variable" Display="always" Required="false" Mask="true"/>
