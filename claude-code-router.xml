@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>claude-code-router</Name>
-  <Repository>musistudio/claude-code-router:latest</Repository>
+  <Repository>musistudio/claude-code-router:2.0.0</Repository>
   <Registry>https://hub.docker.com/r/musistudio/claude-code-router</Registry>
   <Network>bridge</Network>
   <MyIP/>
@@ -25,6 +25,6 @@
   <Config Name="Config dir" Target="/root/.claude-code-router" Default="/mnt/user/appdata/claude-code-router" Mode="rw" Description="Holds config.json and rotating logs. Edit config.json to add upstream providers and route scenarios." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/claude-code-router</Config>
   <Config Name="HOST" Target="HOST" Default="0.0.0.0" Description="Bind address inside the container. 0.0.0.0 to accept LAN traffic." Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
   <Config Name="PORT" Target="PORT" Default="3456" Description="In-container listen port. Match the published port above." Type="Variable" Display="advanced" Required="true" Mask="false">3456</Config>
-  <Config Name="APIKEY" Target="APIKEY" Default="" Description="Token clients must present (Authorization: Bearer ...). Leave blank to disable auth on a trusted LAN; set a strong value if exposing beyond." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="APIKEY" Target="APIKEY" Default="" Description="REQUIRED. Token clients send as 'x-api-key' or 'Authorization: Bearer ...'. CCR refuses to bind 0.0.0.0 unless this is set, so leaving it blank means the proxy is unreachable from the LAN. Generate a 32+ char random hex (e.g. `openssl rand -hex 32`)." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="LOG_LEVEL" Target="LOG_LEVEL" Default="info" Description="trace, debug, info, warn, error" Type="Variable" Display="advanced" Required="false" Mask="false">info</Config>
 </Container>

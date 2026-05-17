@@ -56,6 +56,13 @@
       "enabled": false
     },
     {
+      "description": "Claude Code Router has a lively config schema (key casing, transformer shape, URL shape have all changed mid-2.x). Never auto-merge — eyeball the release notes against config-examples/claude-code-router.config.json each time.",
+      "matchPackageNames": ["musistudio/claude-code-router"],
+      "automerge": false,
+      "minimumReleaseAge": "3 days",
+      "labels": ["dependencies", "ccr-review-required"]
+    },
+    {
       "description": "NEVER auto-merge majors anywhere.",
       "matchUpdateTypes": ["major"],
       "automerge": false,
