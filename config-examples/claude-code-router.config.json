@@ -4,10 +4,22 @@
   "APIKEY": "${APIKEY}",
   "Providers": [
     {
+      "name": "deepinfra",
+      "api_base_url": "https://api.deepinfra.com/v1/openai/chat/completions",
+      "api_key": "${DEEPINFRA_API_KEY}",
+      "models": [
+        "deepseek-ai/DeepSeek-V4-Pro",
+        "deepseek-ai/DeepSeek-V4-Flash",
+        "moonshotai/Kimi-K2.6",
+        "Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo"
+      ]
+    },
+    {
       "name": "llamaswap",
       "api_base_url": "http://llama-swap:8080/v1/chat/completions",
       "api_key": "dummy",
       "models": [
+        "glm-4.5-air_AGENTIC",
         "qwen3-coder-30b_CODE",
         "qwen3.6-35b-mtp_GEN_PURPOSE",
         "llama-3.2-3b_TEST"
