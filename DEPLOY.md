@@ -160,6 +160,39 @@ You want to see `cache_n` increasing turn-over-turn. If every turn shows `cache_
 
 ---
 
+## Stack: Cloud (DeepInfra)
+
+You can skip the local models entirely and run Claude Code against cloud-hosted open-weights frontier models. The seed CCR config already ships with a `deepinfra` provider slot; you just need an API key and one config edit.
+
+What you get: DeepSeek V4-Pro serving Claude Code at ~3s/turn with full tool support — ~14x cheaper than Anthropic's API, which is about as fast as Sonnet in practice. Kimi K2.6 and Qwen3-Coder-480B also available. All three are hosted in NA with a no-train-on-data policy (SOC 2 + ISO 27001).
+
+### Step: Add your DeepInfra API key
+
+1. Sign up at https://deepinfra.com, fund $10-50.
+2. Get an API key from the dashboard.
+3. Edit the CCR container in Unraid → scroll to `DEEPINFRA_API_KEY` → paste.
+4. Edit `/mnt/user/appdata/claude-code-router/config.json` and flip `Router.default` (and the other three entries) to `"deepinfra,deepseek-ai/DeepSeek-V4-Pro"`.
+5. Restart CCR.
+
+Your Mac shell setup doesn't change — `ANTHROPIC_BASE_URL` still points at the same CCR instance.
+
+### Other cloud models worth knowing
+
+All via the same `deepinfra` provider in your config.json (add to the `models` list to make available):
+
+| Model | $M in | $M out | Notes |
+|---|---|---|---|
+| `deepseek-ai/DeepSeek-V4-Pro` | $1.74 | $3.48 | Daily driver. ~3s/turn cold. Cached input $0.145. |
+| `deepseek-ai/DeepSeek-V4-Flash` | $0.14 | $0.28 | **DO NOT USE with CCR** — 15x slower than Pro on ~25K+ token prompts (48s vs 3s). Good for one-shot short queries only. |
+| `moonshotai/Kimi-K2.6` | $0.75 | $3.50 | Agentic coder champion. SWE-Bench Verified 76.8 vs Opus 4.5 80.9. |
+| `Qwen/Qwen3-Coder-480B-A35B-Instruct-Turbo` | $0.30 | $1.00 | Cheaper coder option. Cached $0.10. |
+
+### Switching between cloud and local
+
+Change the `Router` entries in `config.json`. Both providers are already in your seed config — you're just pointing the routes. A restart picks it up. No Mac-side changes.
+
+---
+
 ## Stack: memsearch backend (Garage + etcd + Milvus)
 
 ### Step 1: Garage
