@@ -15,7 +15,7 @@
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/claude-code-router.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/claude-code-router.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --entrypoint=/bin/sh</ExtraParams>
-  <PostArgs>-c "d=/root/.claude-code-router; mkdir -p $d; [ ! -f $d/config.json ] &amp;&amp; wget -qO $d/config.json https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.config.json &amp;&amp; echo '[init] seeded config.json'; [ ! -f $d/strip-cch.js ] &amp;&amp; wget -qO $d/strip-cch.js https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.strip-cch.js &amp;&amp; echo '[init] seeded strip-cch.js'; exec pm2-runtime start /app/ecosystem.config.cjs"</PostArgs>
+  <PostArgs>-c "d=/root/.claude-code-router; mkdir -p $d; if [ ! -f $d/config.json ]; then wget -qO $d/config.json https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.config.json; echo '[init] seeded config.json'; fi; if [ ! -f $d/strip-cch.js ]; then wget -qO $d/strip-cch.js https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/claude-code-router.strip-cch.js; echo '[init] seeded strip-cch.js'; fi; exec pm2-runtime start /app/ecosystem.config.cjs"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
