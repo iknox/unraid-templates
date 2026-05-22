@@ -11,7 +11,7 @@
   <Project>https://milvus.io</Project>
   <Overview>Open-source vector database for similarity search over embeddings. Runs in Standalone mode — needs an S3-compatible object store (Garage or MinIO) and an etcd instance for metadata; both default-configured to the paired templates in this repo.&#xD;[br]Paste your S3 Access Key ID and Secret below. See the repo README for the four-command Garage bucket setup if you don't already have credentials.</Overview>
   <Category>Tools: Databases:</Category>
-  <WebUI>http://[IP]:[PORT:9091]/healthz</WebUI>
+  <WebUI>http://[IP]:[PORT:9091]/ui/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/milvus.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/milvus.png</Icon>
   <ExtraParams>--restart=unless-stopped --security-opt seccomp=unconfined --network=local-ai</ExtraParams>
