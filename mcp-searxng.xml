@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>mcp-searxng</Name>
+  <Repository>ghcr.io/iknox/mcp-searxng:main</Repository>
+  <Registry>https://github.com/iknox/unraid-images/pkgs/container/mcp-searxng</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/iknox/mcp-searxng</Project>
+  <Overview>MCP bridge for SearXNG that exposes searxng_web_search and web_url_read tools to Claude Code and other MCP clients.&#xD;[br]&#xD;[br]This is the iknox fork with:&#xD;[br]- Mozilla Readability content extraction (strips nav/footer/sidebar)&#xD;[br]- Page metadata extraction (title, author, date as YAML)&#xD;[br]- Two-pass reading support (readHeadings → section)&#xD;[br]- Default 8000-char cap on bare fetches to save tokens&#xD;[br]- Content-Length HEAD check that blocks pages over 5MB&#xD;[br]&#xD;[br]Connects to a SearXNG instance over the local-ai network.</Overview>
+  <Category>Tools: AI:</Category>
+  <WebUI>http://[IP]:[PORT:3000]/health</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/mcp-searxng.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/mcp-searxng.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=local-ai</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>MCP bridge that wraps a SearXNG JSON API into Model Context Protocol tools (searxng_web_search + web_url_read). Claude Code, Claude Desktop, or any MCP client connects via HTTP at port PORT. The SEARXNG_URL env var points at your SearXNG container on the local-ai network.&#xD;[br]&#xD;[br]This replaces the npx/node stdio invocation — run it as a persistent HTTP service on castle and point your MCP client at http://castle:PORT/mcp.</Description>
+  <Config Name="HTTP Port" Target="MCP_HTTP_PORT" Default="3000" Mode="tcp" Description="HTTP port the MCP server listens on. Set your MCP client to connect to http://castle:PORT/mcp." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+  <Config Name="SearXNG URL" Target="SEARXNG_URL" Default="http://searxng:8888" Description="URL of the SearXNG JSON API. Use the container name if both are on the local-ai network." Type="Variable" Display="always" Required="true" Mask="false">http://searxng:8888</Config>
+  <Config Name="User Agent" Target="URL_READER_USER_AGENT" Default="" Description="Optional User-Agent string for URL fetching. Leave blank for the default." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Allow Private URLs" Target="ALLOW_PRIVATE_URLS" Default="false" Description="Set to true to allow fetching private/local IPs (off by default for security)." Type="Variable" Display="advanced" Required="false" Mask="false">false</Config>
+  <Config Name="Hardening" Target="HARDEN" Default="true" Description="Disable to skip private-IP filtering and TLS enforcement." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+</Container>
