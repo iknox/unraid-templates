@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Hermes-Agent</Name>
+  <Repository>nousresearch/hermes-agent</Repository>
+  <Registry>https://hub.docker.com/r/nousresearch/hermes-agent</Registry>
+  <Network>bridge</Network>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/NousResearch/hermes-agent</Project>
+  <Overview>The self-improving AI agent built by Nous Research. The only agent with a built-in learning loop — persistent memory, 68+ skills, MCP support, and realtime voice plugins.&#xD;[br]This template configures Hermes to run headlessly with the web dashboard exposed via basic auth, and is designed to pair with a local LLM (e.g. llama-swap on the same host).&#xD;[br]After first install, run `hermes config set ...` in the container console to point the LLM endpoint at your local model server — or keep the default (OpenRouter + claude-opus). See the config-examples/ directory for a ready-made config.</Overview>
+  <Category>AI:</Category>
+  <WebUI>http://[IP]:[PORT:9119]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/hermes-agent.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/medzin/docker-templates/main/images/hermes-agent-icon.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs>sleep infinity</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Description>Hermes Agent is Nous Research's self-improving AI agent.&#xD;[br]Key features:&#xD;[br]- Persistent 3-tier memory (episodic, semantic, procedural)&#xD;[br]- 68+ built-in skills (coding, research, creative, MCP servers, etc.)&#xD;[br]- Self-learning loop — discovers and stores new skills automatically&#xD;[br]- MCP client + server for tool extensibility&#xD;[br]- Real-time voice plugins (hermes-s2s, hermes-livekit)&#xD;[br]- 22 messaging platforms (Telegram, Discord, Slack, WhatsApp, etc.)&#xD;[br]- Home Assistant native tools&#xD;[br][br]This template runs the agent in a headless-supervisor mode: the s6 init system keeps the dashboard and gateway running as supervised services, while the main container process idles. The web UI provides a full chat interface, config editor, and session browser.&#xD;[br][br]Point it at a local OpenAI-compatible LLM (llama-swap, vLLM, etc.) for fully local operation, or use the built-in Nous Portal / OpenRouter integration for cloud models.</Description>
+  <Config Name="Appdata" Target="/opt/data" Default="/mnt/cache/appdata/hermes-agent" Mode="rw" Description="Single source of truth for all Hermes state: config, sessions, memories, skills, pairing codes. Must be owned by HERMES_UID:HERMES_GID (default 10000:10000). Use a real disk path (/mnt/cache/...) — the /mnt/user FUSE share can break ownership fixes." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/hermes-agent</Config>
+  <Config Name="Dashboard Port" Target="9119" Default="9119" Mode="tcp" Description="Web dashboard HTTP port. Open http://[UNRAID-IP]:9119 in your browser after starting." Type="Port" Display="always" Required="true" Mask="false">9119</Config>
+  <Config Name="API Port" Target="8642" Default="8642" Mode="tcp" Description="Hermes API server port (optional, set API_SERVER_ENABLED=true to enable)" Type="Port" Display="advanced" Required="false" Mask="false">8642</Config>
+  <Config Name="HERMES_DASHBOARD" Target="HERMES_DASHBOARD" Default="1" Mode="" Description="Set to 1 to launch the web dashboard alongside the main command" Type="Variable" Display="always" Required="true" Mask="false">1</Config>
+  <Config Name="Dashboard Username" Target="HERMES_DASHBOARD_BASIC_AUTH_USERNAME" Default="admin" Mode="" Description="Basic auth username for the dashboard. Dashboard binds to 0.0.0.0 and requires auth — set both username and password." Type="Variable" Display="always" Required="false" Mask="false">admin</Config>
+  <Config Name="Dashboard Password" Target="HERMES_DASHBOARD_BASIC_AUTH_PASSWORD" Default="hermes" Mode="" Description="Basic auth password for the dashboard. CHANGE THIS from the default. Dashboard binds to 0.0.0.0 and requires auth." Type="Variable" Display="always" Required="false" Mask="true">hermes</Config>
+  <Config Name="API_SERVER_ENABLED" Target="API_SERVER_ENABLED" Default="false" Mode="" Description="Enable the API server (port 8642). When true, you can send requests to the Hermes API programmatically." Type="Variable" Display="always" Required="false" Mask="false">false</Config>
+  <Config Name="API_SERVER_KEY" Target="API_SERVER_KEY" Default="" Mode="" Description="Bearer token for API server auth. Required if API_SERVER_ENABLED=true." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="HERMES_DASHBOARD_HOST" Target="HERMES_DASHBOARD_HOST" Default="0.0.0.0" Mode="" Description="Bind address for the dashboard. 0.0.0.0 = all interfaces (LAN accessible with basic auth). 127.0.0.1 = localhost only (use SSH tunnel)." Type="Variable" Display="advanced" Required="true" Mask="false">0.0.0.0</Config>
+  <Config Name="HERMES_DASHBOARD_PORT" Target="HERMES_DASHBOARD_PORT" Default="9119" Mode="" Description="Port for the dashboard HTTP server" Type="Variable" Display="advanced-hide" Required="true" Mask="false">9119</Config>
+  <Config Name="TELEGRAM_BOT_TOKEN" Target="TELEGRAM_BOT_TOKEN" Default="" Mode="" Description="Telegram bot token (from @BotFather). Leave blank if not using Telegram." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="TELEGRAM_ALLOWED_USERS" Target="TELEGRAM_ALLOWED_USERS" Default="" Mode="" Description="Comma-separated Telegram user IDs allowed to use the bot" Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="TZ" Target="TZ" Default="America/Chicago" Mode="" Description="Timezone for logs and cron scheduling" Type="Variable" Display="advanced" Required="false" Mask="false">America/Chicago</Config>
+  <Config Name="HERMES_UID" Target="HERMES_UID" Default="10000" Mode="" Description="Runtime user ID. Must be 1000-65534. The appdata directory must be owned by this UID." Type="Variable" Display="advanced" Required="false" Mask="false">10000</Config>
+  <Config Name="HERMES_GID" Target="HERMES_GID" Default="10000" Mode="" Description="Runtime group ID. Must be 1000-65534. The appdata directory must be owned by this GID." Type="Variable" Display="advanced" Required="false" Mask="false">10000</Config>
+  <TailscaleStateDir>/opt/data/.tailscale_state</TailscaleStateDir>
+</Container>
