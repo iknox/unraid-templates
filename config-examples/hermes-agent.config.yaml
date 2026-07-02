@@ -1,0 +1,28 @@
+# Hermes Agent config.yaml — local LLM via llama-swap
+# ====================================================
+# Copy or symlink this into /mnt/cache/appdata/hermes-agent/config.yaml
+# after first install to bypass OpenRouter and use your local Qwen3.
+#
+# Alternatively, run the `hermes-setup-llm` user script on Castle
+# which applies these settings idempotently.
+
+model:
+  default: qwen3.6-35b-mtp_GEN_PURPOSE
+  provider: qwen3
+  base_url: http://192.168.1.214:8080/v1
+
+custom_providers:
+  - name: qwen3
+    base_url: http://192.168.1.214:8080/v1
+    api_key: ""
+
+# ── Optional tweaks ──────────────────────────────────────────────────
+# Uncomment and adjust as needed:
+
+# display:
+#   streaming: true           # stream tokens as they arrive
+#   show_reasoning: false      # hide model reasoning from chat output
+
+# agent:
+#   max_turns: 60              # max tool-call rounds per session
+#   verify_on_stop: false      # skip "are you sure?" on stop
