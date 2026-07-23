@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>claude-code-router</Name>
-  <Repository>musistudio/claude-code-router:2.0.0</Repository>
+  <Repository>musistudio/claude-code-router:3.0.7</Repository>
   <Registry>https://hub.docker.com/r/musistudio/claude-code-router</Registry>
   <Network>bridge</Network>
   <MyIP/>
