@@ -21,7 +21,7 @@
   <DonateText/>
   <DonateLink/>
   <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Host port 9931 (llama.cpp's announced future default); internal port set by /config/start.sh. Configure via /config/start.sh on the appdata share — no env vars.</Description>
-  <Config Name="HTTP / API" Target="6631" Default="9931" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 (set by start.sh) maps to host 9931 — llama.cpp's announced future default port." Type="Port" Display="always" Required="true" Mask="false">9931</Config>
+  <Config Name="HTTP / API" Target="6631" Default="9931" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). The server's internal default port maps to host 9931 — llama.cpp's announced future default. If the in-image llama.cpp default ever changes, update this Target." Type="Port" Display="always" Required="true" Mask="false">9931</Config>
   <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files. Expects UD-IQ4_XS shards and the MTP sidecar." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
   <Config Name="Runtime config" Target="/config" Default="/mnt/user/appdata/qwen38-flash-next-rocm" Mode="rw" Description="Holds start.sh — the llama-server command line (model, MTP sidecar, mmproj, context, slots). Seeded automatically on first boot; edit and restart the container to apply." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/qwen38-flash-next-rocm</Config>
 </Container>

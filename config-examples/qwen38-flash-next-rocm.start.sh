@@ -12,7 +12,7 @@ NP=1                                                   # raise to 3 for agent se
 EXTRA_ARGS=
 
 set -- -m "$MODEL" -fa 1 --no-mmap -ctk f16 -ctv f16 -c "$CTX" -np "$NP" \
-       --ctx-checkpoints 8 --jinja --host 0.0.0.0 --port 6631 -ngl 999
+       --ctx-checkpoints 8 --jinja --host 0.0.0.0 -ngl 999
 [ -n "$MTP" ] && set -- "$@" -md "$MTP" --spec-type draft-mtp,ngram-mod \
        --spec-draft-n-max 3 --spec-ngram-mod-n-max 64 --spec-ngram-mod-n-match 24
 [ -n "$MMPROJ" ] && set -- "$@" --mmproj "$MMPROJ"
