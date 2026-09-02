@@ -15,7 +15,7 @@
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/qwen38-flash-next-rocm.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/qwen.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --entrypoint=/bin/bash</ExtraParams>
-  <PostArgs>-c "if [ ! -f /config/start.sh ]; then wget -qO /config/start.sh https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/qwen38-flash-next-rocm.start.sh; fi; exec bash /config/start.sh"</PostArgs>
+  <PostArgs>-c "if [ ! -f /config/start.sh ]; then curl -fsSL -o /config/start.sh https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/qwen38-flash-next-rocm.start.sh; fi; exec bash /config/start.sh"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
