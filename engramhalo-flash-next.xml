@@ -22,5 +22,5 @@
   <DonateLink/>
   <Description>Server config is baked into the image; only model files are mounted. ROCm 7.14 by design (the fork's measured stack). CTX defaults to 163840 — the MTP-validated limit; pass 262144 with MTP empty for full-context no-speculation.</Description>
   <Config Name="HTTP / API" Target="6631" Default="6631" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 to host 6631 — llama.cpp's new default port." Type="Port" Display="always" Required="true" Mask="false">6631</Config>
-  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files (shared with other llama containers). Expects UD-IQ4_XS shards and mtp-sidecars/EasiiX-Qwen3.8-Flash-Next-Q8_0.gguf." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files (shared with other llama containers). Expects UD-IQ4_XS shards and mtp-sidecars/EasiiX-Qwen3.8-Flash-Next-Q8_0.gguf." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
 </Container>

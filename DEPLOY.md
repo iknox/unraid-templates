@@ -102,7 +102,7 @@ What you get: a local OpenAI-compatible inference endpoint at `http://UNRAID-IP:
 Apps → **Private Apps** → **llama-swap** → Install. Defaults are sane:
 
 - HTTP / API: `8080`
-- Models: `/mnt/user/appdata/llama.cpp/models`
+- Models: `/mnt/user/models`
 - Config: `/mnt/user/appdata/llama-swap`
 
 On first boot the template auto-downloads a starter `config.yaml` from this repo with three model entries: a tiny smoke-test (`llama-3.2-3b_TEST`), a daily-driver coder (`qwen3-coder-30b_CODE`), and a parked general-purpose entry (`qwen3.6-35b-mtp_GEN_PURPOSE`). Edits to the config hot-reload — no container restart needed.
@@ -110,8 +110,8 @@ On first boot the template auto-downloads a starter `config.yaml` from this repo
 You then need to actually drop GGUF files into the Models dir. The seed config expects:
 
 ```bash
-mkdir -p /mnt/user/appdata/llama.cpp/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
-cd /mnt/user/appdata/llama.cpp/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
+mkdir -p /mnt/user/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
+cd /mnt/user/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
 wget -O Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf \
   "https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf?download=true"
 ```
@@ -338,7 +338,7 @@ docker stop claude-code-router && docker rm claude-code-router
 docker stop llama-swap && docker rm llama-swap
 rm -rf /mnt/user/appdata/claude-code-router/* \
        /mnt/user/appdata/llama-swap/*
-# Models in /mnt/user/appdata/llama.cpp/models/ are 17GB+ each; keep them
+# Models in /mnt/user/models/ are 17GB+ each; keep them
 # unless you really mean to re-download.
 ```
 
