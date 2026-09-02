@@ -11,9 +11,9 @@
   <Project>https://github.com/Aristo94/EngramHalo.cpp</Project>
   <Overview>Qwen3.8-Flash-Next on Strix Halo (gfx1151) via EngramHalo.cpp — a llama.cpp fork with RDNA 3.5 kernel patches, true QSA sparse-attention gather, working MTP, and the 27 GiB engram table kept on SSD (~1 GiB resident). Upstream measured: code decode 24.4 to 39.3 t/s, prefill at 131K depth roughly doubled.&#xD;[br]Server flags are baked into the image (long-context agent profile: q8_0 KV, mmap lazy-read, MTP + ngram-mod with the EasiiX sidecar). The only mount is /models — no config files, no env vars.&#xD;[br]Supersedes qwen38-flash-next-rocm (kyuz0 toolbox). Requires the Strix Halo host tuning: syslinux append amdgpu.gttsize=117760 amdgpu.no_system_mem_limit=1 ttm.pages_limit=24576000, and BIOS UMA Frame Buffer Size 512M.&#xD;[br]Optional env overrides exist for operators (MODEL, MTP, CTX, NP, THREADS, MODE=ssd|ram, EXTRA_ARGS) — defaults are fine. Thinking mode is on by default; allow generous max_tokens in clients.</Overview>
   <Category>Tools: Productivity: AI:</Category>
-  <WebUI>http://[IP]:[PORT:8081]/</WebUI>
+  <WebUI>http://[IP]:[PORT:6631]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/engramhalo-flash-next.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/qwen.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1</ExtraParams>
   <PostArgs/>
   <CPUset/>
@@ -21,6 +21,6 @@
   <DonateText/>
   <DonateLink/>
   <Description>Server config is baked into the image; only model files are mounted. ROCm 7.14 by design (the fork's measured stack). CTX defaults to 163840 — the MTP-validated limit; pass 262144 with MTP empty for full-context no-speculation.</Description>
-  <Config Name="HTTP / API" Target="8080" Default="8081" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 8080 to host 8081." Type="Port" Display="always" Required="true" Mask="false">8081</Config>
+  <Config Name="HTTP / API" Target="6631" Default="6631" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 to host 6631 — llama.cpp's new default port." Type="Port" Display="always" Required="true" Mask="false">6631</Config>
   <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files (shared with other llama containers). Expects UD-IQ4_XS shards and mtp-sidecars/EasiiX-Qwen3.8-Flash-Next-Q8_0.gguf." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
 </Container>
