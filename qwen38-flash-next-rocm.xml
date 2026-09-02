@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>qwen38-flash-next-rocm</Name>
+  <Repository>docker.io/kyuz0/amd-strix-halo-toolboxes:rocm-10.0-qwen-3.8-flash-next</Repository>
+  <Registry>https://hub.docker.com/r/kyuz0/amd-strix-halo-toolboxes</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/drluoto/flash-next-strix-halo</Project>
+  <Overview>Qwen3.8-Flash-Next (125B MoE, 6B active, qwen4exp: Gated DeltaNet + Qwen Sparse Attention + 51B n-gram table) served by llama-server on AMD Strix Halo (gfx1151) via ROCm 10.0.&#xD;[br]Image is kyuz0's rocm-10.0-qwen-3.8-flash-next toolbox, which tracks drluoto/llama.cpp:strix-halo-flash-next for GPU TOP_K, native MTP speculative decoding, and ngram-mod drafting. ROCm is required for this model: the 47.7 GiB n-gram table exceeds Vulkan's 4 GiB max buffer binding, so Vulkan containers OOM at load.&#xD;[br]Point MODEL at the first shard of an unsloth/Qwen3.8-Flash-Next-GGUF build (UD-IQ4_XS fits 128 GB with 262k ctx). Optionally download the MTP sidecar from drluoto/Qwen3.8-Flash-Next-MTP-GGUF and the mmproj for vision.&#xD;[br]Leave GGML_HIP_ENABLE_UNIFIED_MEMORY unset — on unified-memory APUs it lands the whole model in unreclaimable process memory. Thinking mode is on by default; allow generous max_tokens in clients.</Overview>
+  <Category>Tools: Productivity: AI:</Category>
+  <WebUI>http://[IP]:[PORT:8081]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/qwen38-flash-next-rocm.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --entrypoint=/bin/bash</ExtraParams>
+  <PostArgs>-c "exec llama-server -m \"$MODEL\" ${MMPROJ:+--mmproj \"$MMPROJ\"} ${MTP:+-md \"$MTP\" --spec-type draft-mtp,ngram-mod --spec-draft-n-max 3 --spec-ngram-mod-n-max 64 --spec-ngram-mod-n-match 24} -fa 1 --no-mmap -ctk f16 -ctv f16 -c \"$CTX\" -np \"$NP\" --ctx-checkpoints 8 --jinja --host 0.0.0.0 --port 8080 $EXTRA_ARGS"</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Port 8081 avoids colliding with llama-swap on 8080.</Description>
+  <Config Name="HTTP / API" Target="8081" Default="8081" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Internal port 8080." Type="Port" Display="always" Required="true" Mask="false">8081</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files. Shared with the llama-swap template so the same download serves both." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
+  <Config Name="Model GGUF" Target="MODEL" Default="/models/Qwen3.8-Flash-Next-UD-IQ4_XS/Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf" Mode="" Description="Path (in-container) to the first shard of the main GGUF; llama.cpp picks up the remaining shards automatically. Download unsloth/Qwen3.8-Flash-Next-GGUF (UD-IQ4_XS) into the Models share." Type="Variable" Display="always" Required="true" Mask="false">/models/Qwen3.8-Flash-Next-UD-IQ4_XS/Qwen3.8-Flash-Next-UD-IQ4_XS-00001-of-00003.gguf</Config>
+  <Config Name="MTP draft model" Target="MTP" Default="/models/mtp-Qwen3.8-Flash-Next-Q8_0.gguf" Mode="" Description="Path to the MTP sidecar GGUF (drluoto/Qwen3.8-Flash-Next-MTP-GGUF). Empty disables speculation (17-20 tok/s); set, it composes with ngram-mod for 25-47 tok/s on coding workloads." Type="Variable" Display="always" Required="false" Mask="false">/models/mtp-Qwen3.8-Flash-Next-Q8_0.gguf</Config>
+  <Config Name="mmproj (vision)" Target="MMPROJ" Default="" Mode="" Description="Optional path to the mmproj GGUF for vision support. Leave empty to disable multimodal." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="Context size" Target="CTX" Default="262144" Mode="" Description="Total KV context. Only the 12 QSA layers grow a KV cache, so 262k costs ~6 GiB. Model + 262k + vision is ~106 GB of 128." Type="Variable" Display="always" Required="true" Mask="false">262144</Config>
+  <Config Name="Parallel slots" Target="NP" Default="1" Mode="" Description="Server slots. Raise to 3 for agent workloads: with --ctx-checkpoints 8 (hardcoded), sessions keep warm caches via LCP routing, cutting return TTFT from minutes to sub-second." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
+  <Config Name="Disable HIP graphs" Target="GGML_CUDA_DISABLE_GRAPHS" Default="1" Mode="" Description="Drluoto-verified workaround for HIP graph-capture crashes on gfx1151. Leave at 1." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
+  <Config Name="Extra server args" Target="EXTRA_ARGS" Default="" Mode="" Description="Appended verbatim to the llama-server command line." Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+</Container>
