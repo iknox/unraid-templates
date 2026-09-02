@@ -11,7 +11,7 @@
   <Project>https://github.com/drluoto/flash-next-strix-halo</Project>
   <Overview>Qwen3.8-Flash-Next (125B MoE, 6B active, qwen4exp: Gated DeltaNet + Qwen Sparse Attention + 51B n-gram table) served by llama-server on AMD Strix Halo (gfx1151) via ROCm 10.0.&#xD;[br]Image is kyuz0's rocm-10.0-qwen-3.8-flash-next toolbox, which tracks drluoto/llama.cpp:strix-halo-flash-next for GPU TOP_K, native MTP speculative decoding, and ngram-mod drafting. ROCm is required for this model: the 47.7 GiB n-gram table exceeds Vulkan's 4 GiB max buffer binding, so Vulkan containers OOM at load.&#xD;[br]All runtime config lives in /config/start.sh (seeded from the repo on first boot — edit it there to change model, MTP, vision, context, or slots). No container environment variables are used. GGUFs: unsloth/Qwen3.8-Flash-Next-GGUF (UD-IQ4_XS fits 128 GB with 262k ctx), MTP sidecar from drluoto/Qwen3.8-Flash-Next-MTP-GGUF.&#xD;[br]Thinking mode is on by default; allow generous max_tokens in clients.</Overview>
   <Category>Tools: Productivity: AI:</Category>
-  <WebUI>http://[IP]:[PORT:6631]/</WebUI>
+  <WebUI>http://[IP]:[PORT:9931]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/qwen38-flash-next-rocm.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/qwen.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --entrypoint=/bin/bash</ExtraParams>
@@ -20,8 +20,8 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Port 6631 (llama.cpp's new default). Configure via /config/start.sh on the appdata share — no env vars.</Description>
-  <Config Name="HTTP / API" Target="6631" Default="6631" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 maps to host 6631 — llama.cpp's new default port." Type="Port" Display="always" Required="true" Mask="false">6631</Config>
+  <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Host port 9931 (llama.cpp's announced future default); internal port set by /config/start.sh. Configure via /config/start.sh on the appdata share — no env vars.</Description>
+  <Config Name="HTTP / API" Target="6631" Default="9931" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 (set by start.sh) maps to host 9931 — llama.cpp's announced future default port." Type="Port" Display="always" Required="true" Mask="false">9931</Config>
   <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files. Expects UD-IQ4_XS shards and the MTP sidecar." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
   <Config Name="Runtime config" Target="/config" Default="/mnt/user/appdata/qwen38-flash-next-rocm" Mode="rw" Description="Holds start.sh — the llama-server command line (model, MTP sidecar, mmproj, context, slots). Seeded automatically on first boot; edit and restart the container to apply." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/qwen38-flash-next-rocm</Config>
 </Container>
