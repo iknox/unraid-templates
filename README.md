@@ -11,9 +11,10 @@ These Unraid container templates were written to stand up a backend for [memsear
 | `milvus`           | Vector database (Standalone mode). Needs S3 + etcd.                     |
 | `wyoming-parakeet` | Speech-to-text over the Wyoming protocol. NVIDIA Parakeet-TDT, CPU.     |
 | `wyoming-kokoro`   | Text-to-speech over the Wyoming protocol. Kokoro-ONNX, CPU.             |
+| `engramhalo-flash-next` | Qwen3.8-Flash-Next on Strix Halo via EngramHalo.cpp (llama.cpp fork: QSA sparse gather, RDNA 3.5 kernels, MTP, SSD-backed engram table). Server flags baked into the image; only /models mounted. Current primary. |
+| `qwen38-flash-next-rocm` | Previous Flash-Next server (kyuz0 ROCm 10.0 toolbox). Kept as fallback. Requires a /config start.sh mount. |
 | `llama-swap`       | Multi-model proxy with llama.cpp baked in. Define many GGUFs in one YAML, hot-swap on demand. Vulkan GPU acceleration; no separate llama.cpp container needed. |
-| `qwen38-flash-next-rocm` | Qwen3.8-Flash-Next via llama-server on Strix Halo (gfx1151) ROCm 10.0, with MTP + ngram-mod speculative decoding. ROCm because the 47.7 GiB n-gram table breaks Vulkan's 4 GiB buffer binding. |
-| `claude-code-router` | Anthropic↔OpenAI translating proxy. Lets Claude Code (and any other Anthropic-API client) drive a local OpenAI-compatible model like `llama-swap`. |
+| `claude-code-router` | Anthropic↔OpenAI translating proxy. Lets Claude Code (and any other Anthropic-API client) drive a local OpenAI-compatible model like `engramhalo-flash-next`. |
 | `searxng`          | Self-hosted metasearch engine. Aggregates Google/Bing/DDG/Brave results without giving your IP. JSON output pre-enabled for use as an MCP search backend. |
 
 ## Install
