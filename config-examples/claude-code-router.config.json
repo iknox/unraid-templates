@@ -15,22 +15,19 @@
       ]
     },
     {
-      "name": "llamaswap",
-      "api_base_url": "http://llama-swap:8080/v1/chat/completions",
+      "name": "local",
+      "api_base_url": "http://192.168.1.214:6631/v1/chat/completions",
       "api_key": "dummy",
       "models": [
-        "glm-4.5-air_AGENTIC",
-        "qwen3-coder-30b_CODE",
-        "qwen3.6-35b-mtp_GEN_PURPOSE",
-        "llama-3.2-3b_TEST"
+        "qwen3.8-flash-next"
       ]
     }
   ],
   "Router": {
-    "default":     "llamaswap,qwen3-coder-30b_CODE",
-    "background":  "llamaswap,qwen3-coder-30b_CODE",
-    "think":       "llamaswap,qwen3-coder-30b_CODE",
-    "longContext": "llamaswap,qwen3-coder-30b_CODE"
+    "default":     "local,qwen3.8-flash-next",
+    "background":  "local,qwen3.8-flash-next",
+    "think":       "local,qwen3.8-flash-next",
+    "longContext": "local,qwen3.8-flash-next"
   },
   "CUSTOM_ROUTER_PATH": "/root/.claude-code-router/strip-cch.js"
 }

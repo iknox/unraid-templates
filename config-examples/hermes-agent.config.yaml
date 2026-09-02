@@ -1,4 +1,4 @@
-# Hermes Agent config.yaml — local LLM via llama-swap
+# Hermes Agent config.yaml — local LLM (llama.cpp server)
 # ====================================================
 # Copy or symlink this into /mnt/cache/appdata/hermes-agent/config.yaml
 # after first install to bypass OpenRouter and use your local Qwen3.
@@ -7,13 +7,13 @@
 # which applies these settings idempotently.
 
 model:
-  default: qwen3.6-35b-mtp_GEN_PURPOSE
+  default: qwen3.8-flash-next
   provider: qwen3
-  base_url: http://192.168.1.214:8080/v1
+  base_url: http://192.168.1.214:6631/v1
 
 custom_providers:
   - name: qwen3
-    base_url: http://192.168.1.214:8080/v1
+    base_url: http://192.168.1.214:6631/v1
     api_key: ""
 
 # ── Optional tweaks ──────────────────────────────────────────────────

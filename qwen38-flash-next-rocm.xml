@@ -13,15 +13,15 @@
   <Category>Tools: Productivity: AI:</Category>
   <WebUI>http://[IP]:[PORT:6631]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/qwen38-flash-next-rocm.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/llama-swap.png</Icon>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/qwen.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --entrypoint=/bin/bash</ExtraParams>
   <PostArgs>-c "if [ ! -f /config/start.sh ]; then wget -qO /config/start.sh https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/qwen38-flash-next-rocm.start.sh; fi; exec bash /config/start.sh"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Port 6631 (llama.cpp's new default) — clear of llama-swap on 8080. Configure via /config/start.sh on the appdata share — no env vars.</Description>
-  <Config Name="HTTP / API" Target="6631" Default="6631" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 maps to host 6631 — llama.cpp's new default port, clear of llama-swap on 8080." Type="Port" Display="always" Required="true" Mask="false">6631</Config>
-  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files. Shared with the llama-swap template so the same download serves both." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
+  <Description>Strix Halo-only (gfx1151) llama-server with MTP + ngram-mod speculation, tuned per drluoto's measured run line. Port 6631 (llama.cpp's new default). Configure via /config/start.sh on the appdata share — no env vars.</Description>
+  <Config Name="HTTP / API" Target="6631" Default="6631" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 6631 maps to host 6631 — llama.cpp's new default port." Type="Port" Display="always" Required="true" Mask="false">6631</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/appdata/llama.cpp/models" Mode="rw" Description="GGUF files. Expects UD-IQ4_XS shards and the MTP sidecar." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/llama.cpp/models</Config>
   <Config Name="Runtime config" Target="/config" Default="/mnt/user/appdata/qwen38-flash-next-rocm" Mode="rw" Description="Holds start.sh — the llama-server command line (model, MTP sidecar, mmproj, context, slots). Seeded automatically on first boot; edit and restart the container to apply." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/qwen38-flash-next-rocm</Config>
 </Container>
