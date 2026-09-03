@@ -20,7 +20,7 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Server config is baked into the image; only model files are mounted. ROCm 7.14 by design (the fork's measured stack). CTX defaults to 163840 — the MTP-validated limit; pass 262144 with MTP empty for full-context no-speculation.</Description>
+  <Description>Server config is baked into the image; only model files are mounted. ROCm 7.14 by design (the fork's measured stack). Runs NP=3 agent-affinity slots: CTX=262144 total split three ways (~87K per concurrent session), each slot holding its own warm KV so concurrent sessions don't evict each other. --ctx-checkpoints 8 is mandatory at NP&gt;1 (GDN recurrent-state snapshots). MTP stays on (branch-validated); append --spec-type none to EXTRA_ARGS to disable speculation.</Description>
   <Config Name="HTTP / API" Target="8080" Default="9931" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root). Container port 8080 (the fork's baked-in default) maps to host 9931 — llama.cpp's announced future default port." Type="Port" Display="always" Required="true" Mask="false">9931</Config>
   <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files (shared with other llama containers). Expects UD-IQ4_XS shards and mtp-sidecars/EasiiX-Qwen3.8-Flash-Next-Q8_0.gguf." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
 </Container>
