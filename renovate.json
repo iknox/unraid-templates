@@ -35,7 +35,7 @@
     },
     {
       "description": "Our own wrapper images — :main is a moving tag we manage in unraid-images, do not let Renovate try to bump these.",
-      "matchPackageNames": ["ghcr.io/iknox/garage-env", "ghcr.io/iknox/wyoming-kokoro-cpu"],
+      "matchPackageNames": ["ghcr.io/iknox/garage-env"],
       "enabled": false
     },
     {

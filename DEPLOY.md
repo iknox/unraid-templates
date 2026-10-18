@@ -18,11 +18,9 @@ For the standalone service docs, see [README.md](README.md).
 ```
   Your Mac / workstation              Unraid host (`local-ai` Docker bridge)
   ┌─────────────────────────┐         ┌────────────────────────────────────────┐
-  │ Any OpenAI client       │         │ Local AI                               │
-  │   (OpenCode, curl,      │── HTTP ─┼─▶ llama-swap (:8080)                   │
-  │    your own scripts)    │  /v1/   │     │ multi-model proxy                │
-  │                         │  chat   │     ▼                                  │
-  │                         │         │   llama-server (Vulkan, in-container)  │
+  │ Any OpenAI client       │         │ Local AI (one at a time)               │
+  │   (OpenCode, curl,      │── HTTP ─┼─▶ qwen38-flash-next-gufo (:8080)      │
+  │    your own scripts)    │  /v1/   │   or deepseek-v4-flash-vulkan (:8080)  │
   │                         │         │                                        │
   │   └─ memsearch plugin ──┼── gRPC ─┼─▶ milvus (:19530, :9091)               │
   │       (SessionStart     │ 19530   │     ├─ etcd (:2379)                    │
@@ -31,7 +29,7 @@ For the standalone service docs, see [README.md](README.md).
 ```
 
 **Local AI stack:**
-- **llama-swap** spawns llama-server processes per model on demand, with a baked-in Vulkan-accelerated llama.cpp. A single llama.cpp server container (Gufo, llama.cpp Vulkan) can sit in the same slot; clients only need `http://UNRAID-IP:8080/v1`.
+- **qwen38-flash-next-gufo** runs Qwen3.8-Flash-Next on ROCm/Gufo; **deepseek-v4-flash-vulkan** runs DeepSeek V4 Flash on Vulkan. They share host port 9931, so one runs at a time. Clients only need `http://UNRAID-IP:9931/v1`.
 
 **memsearch backend:**
 - **Garage** holds the actual vector chunk bytes (objects in an S3 bucket).
@@ -46,7 +44,7 @@ For the standalone service docs, see [README.md](README.md).
 
 - Unraid 6.12+ with Community Applications plugin installed.
 - For **memsearch**: ~2 GB free RAM, ~1 GB storage (plus your corpus). `memsearch` installed on the client; see [memsearch README](https://github.com/zilliztech/memsearch) and the Claude Code plugin notes below.
-- For **Local AI**: a GPU that llama.cpp can target (Vulkan on AMD/Intel, ROCm on supported AMD, CUDA on NVIDIA), ~20 GB free disk for the daily-driver model, and enough GPU-addressable memory for the model you pick. Any OpenAI-compatible client on the workstation.
+- For **Local AI**: a GPU that llama.cpp can target (Vulkan on AMD/Intel, ROCm on supported AMD, CUDA on NVIDIA), ~120 GB free disk for the daily-driver model, and enough GPU-addressable memory for the model you pick. Any OpenAI-compatible client on the workstation.
 
 ---
 
@@ -87,71 +85,51 @@ If you don't have a cache pool yet, put everything on the array. You can reconfi
 
 ---
 
-## Stack: Local AI (llama-swap)
+## Stack: Local AI (Qwen / DeepSeek)
 
 Skip this section if you only want memsearch.
 
-What you get: a local OpenAI-compatible inference endpoint at `http://UNRAID-IP:8080/v1`. Point any OpenAI-compatible client at it.
-
-### Step 1: llama-swap
-
-Apps → **Private Apps** → **llama-swap** → Install. Defaults are sane:
-
-- HTTP / API: `8080`
-- Models: `/mnt/user/models`
-- Config: `/mnt/user/appdata/llama-swap`
-
-On first boot the template auto-downloads a starter `config.yaml` from this repo with three model entries: a tiny smoke-test (`llama-3.2-3b_TEST`), a daily-driver coder (`qwen3-coder-30b_CODE`), and a parked general-purpose entry (`qwen3.6-35b-mtp_GEN_PURPOSE`). Edits to the config hot-reload — no container restart needed.
-
-You then need to actually drop GGUF files into the Models dir. The seed config expects:
-
-```bash
-mkdir -p /mnt/user/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
-cd /mnt/user/models/Qwen3-Coder-30B-A3B-Instruct-GGUF
-wget -O Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf \
-  "https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF/resolve/main/Qwen3-Coder-30B-A3B-Instruct-UD-Q4_K_XL.gguf?download=true"
-```
-
-(That's the 17.7 GB Q4 daily driver. The smoke-test 3B is ~1.9 GB from `unsloth/Llama-3.2-3B-Instruct-GGUF`. The 35B-MTP is currently broken upstream — see config comments.)
-
-Verify by hitting the model list:
-
-```bash
-curl -sf http://UNRAID-IP:8080/v1/models | jq -r '.data[].id'
-```
-
-### Step 2: Point a client at it
-
-Anything that speaks OpenAI chat-completions works:
-
-```bash
-curl -sf http://UNRAID-IP:8080/v1/chat/completions \
-  -H 'Content-Type: application/json' \
-  -d '{"model":"qwen3-coder-30b_CODE","messages":[{"role":"user","content":"hello"}],"max_tokens":64}'
-```
-
-In a client (OpenCode, an editor plugin, your own script), set the base URL to `http://UNRAID-IP:8080/v1` and the model to one of the ids from `/v1/models`. No API key is required by the local server.
-
-### What "good" looks like
-
-```bash
-docker logs llama-swap --tail 20 2>&1 | grep -E "prompt eval|cache_n"
-```
-
-First turn cold-loads the model (~30-60s). Later turns should respond in seconds, and `cache_n` should increase turn-over-turn as llama.cpp reuses the prompt cache.
-
-### Single-model servers (A/B pair)
-
-Two templates replace the old EngramHalo server and serve one model each. They **share host port 9931**, so exactly one can run at a time:
+What you get: an OpenAI-compatible endpoint at `http://UNRAID-IP:9931/v1`. Two templates serve one model each:
 
 | Template | Backend | Model |
 |---|---|---|
 | `qwen38-flash-next-gufo` | ROCm 10.0 / Gufo (needs `/dev/kfd`) | Qwen3.8-Flash-Next UD-Q4_K_XL + shared MTP Q8_0 head |
 | `deepseek-v4-flash-vulkan` | Vulkan RADV (needs `/dev/dri` only) | DeepSeek V4 Flash 0731 UD-IQ2_XXS + dspark Q8_0 |
 
-Both seed `/config/start.sh` from this repo on first boot; edit that file (not env vars) and restart to change model, context, or speculation. To switch: stop one, confirm the GPU has released GTT (`radeontop` or watch free memory settle), then start the other. Starting both will fail on the port bind, by design.
+### Install
 
-Install them through **Apps → Private Apps** like the other templates.
+Apps → **Private Apps** → pick a template → Install. The defaults are already correct:
+
+- HTTP / API: host `9931` → container `8080`
+- Models: `/mnt/user/models`
+- Config: `/mnt/user/appdata/<container-name>`
+
+No model files are needed up front. On first boot the template seeds `/config/start.sh` from this repo, and that script fetches the pinned GGUFs from Hugging Face into the models share. Downloads resume if interrupted and are size-checked; expect roughly 100 GB per model and a long first start. Watch progress with `docker logs -f <container>`.
+
+The two templates share host port 9931 **on purpose**: only one can hold the GPU at a time. Starting the second while the first runs fails on the port bind instead of silently fighting over GTT. To switch, stop one, let the GPU release memory, then start the other.
+
+### Point a client at it
+
+```bash
+curl -sf http://UNRAID-IP:9931/v1/models | jq -r '.data[].id'
+
+curl -sf http://UNRAID-IP:9931/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"Qwen3.8-Flash-Next-UD-Q4_K_XL",
+       "messages":[{"role":"user","content":"hello"}],
+       "max_tokens":512}'
+```
+
+In a client (OpenCode, an editor plugin, your own script), set the base URL to `http://UNRAID-IP:9931/v1` and the model to an id from `/v1/models`. No API key is required.
+
+### What "good" looks like
+
+```bash
+docker logs qwen38-flash-next-gufo --tail 20 2>&1 | grep -E "fetching|prompt eval|draft"
+docker logs deepseek-v4-flash-vulkan   --tail 20 2>&1 | grep -E "fetching|prompt eval|draft"
+```
+
+First turn cold-loads the model (~30-60s). Later turns should respond in seconds.
 
 ---
 
@@ -275,7 +253,7 @@ All images pin explicit tags. To pick up security updates:
 - **Garage wrapper** (`ghcr.io/iknox/garage-env:main`) rebuilds automatically on every push to `main` in [iknox/unraid-images](https://github.com/iknox/unraid-images) (`garage-env/Dockerfile`). Unraid's CA update check will flag available updates; click Update in the UI to pull and recreate the container. Persisted state survives — but take a backup first on a major Garage bump, since the metadata DB may be migrated in place.
 - **Milvus** is pinned to `milvusdb/milvus:v3.0.3`. Bumps are image-tag-only (no data migration step), but read [MIGRATIONS.md](MIGRATIONS.md) first: keep Storage V3 (Loon) off, chown the data dir to `999:999`, and roll back by restoring backups rather than retagging.
 - **etcd** is pinned to `quay.io/coreos/etcd:v3.7.2`. Milvus 3.0 requires **≥ 3.6.11**; the 3.7 line needs no `--experimental-*` flags.
-- **llama-swap** uses `:vulkan` (a moving tag rebuilt by upstream as new llama.cpp releases land). To pick up a new llama.cpp build, click Update in the Unraid UI; container restarts with the new image. Edits to your `config.yaml` survive (volume-mounted).
+- **Qwen / DeepSeek** use kyuz0's `amd-strix-halo-toolboxes` tags (`rocm-10.0-gufo`, `vulkan-radv-performance`), rebuilt upstream as Gufo/llama.cpp change. Unraid flags new digests; click Update to pull. The weights on the models share are not touched.
 
 ### Resetting the stack
 
@@ -292,16 +270,17 @@ rm -rf /mnt/user/appdata/garage/* \
 
 Then reinstall from Apps → Private Apps in the original order.
 
-**Local AI** — order doesn't matter (no inter-state):
+**Local AI** — no inter-state:
 
 ```bash
-docker stop llama-swap && docker rm llama-swap
-rm -rf /mnt/user/appdata/llama-swap/*
-# Models in /mnt/user/models/ are 17GB+ each; keep them
+docker rm -f qwen38-flash-next-gufo deepseek-v4-flash-vulkan 2>/dev/null
+rm -rf /mnt/user/appdata/qwen38-flash-next-gufo/* \
+       /mnt/user/appdata/deepseek-v4-flash-vulkan/*
+# Models in /mnt/user/models/ are ~100GB each; keep them
 # unless you really mean to re-download.
 ```
 
-Reinstall from Apps. The template auto-seeds its config on first boot from this repo.
+Reinstall from Apps. First boot re-seeds `start.sh` and reuses any weights already present.
 
 ### Backups
 

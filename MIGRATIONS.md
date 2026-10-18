@@ -55,10 +55,6 @@ Then confirm every collection still has its expected row count and run one real 
 
 Generally safe to auto-merge patch + minor updates. Major version bumps (3.5 → 4.x if it ever happens) need careful review — etcd's storage format has changed across majors before. Our config uses standard env vars (`ETCD_AUTO_COMPACTION_MODE`, etc.) that have been stable since 3.4.
 
-## wyoming-onnx-asr (Parakeet)
-
-Patch + minor are typically safe. The container exposes `/data` for the model cache; on a version bump the existing cached model is reused unless the model file path changed in the new version (rare). Watch for the entrypoint command-line shape changing — our `--quantization int8 --model-en nemo-parakeet-tdt-0.6b-v2` invocation is stable as of v0.5.0 but check the upstream Dockerfile.
-
 ## Garage (via `iknox/garage-env`)
 
 Bumps to upstream `dxflrs/garage` happen in the `unraid-images` repo, not here. Our wrapper image's `Dockerfile` pins the upstream version with `FROM dxflrs/garage:vX.Y.Z`; Renovate watches that. When a new `garage-env` image publishes to GHCR, the Unraid container picks up the new `:main` tag automatically on the next "Force Update" or restart.
