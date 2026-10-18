@@ -104,7 +104,7 @@ Apps → **Private Apps** → pick a template → Install. The defaults are alre
 - Models: `/mnt/user/models`
 - Config: `/mnt/user/appdata/<container-name>`
 
-No model files are needed up front. On first boot the template seeds `/config/start.sh` from this repo, and that script fetches the pinned GGUFs from Hugging Face into the models share. Downloads resume if interrupted and are size-checked; expect roughly 100 GB per model and a long first start. Watch progress with `docker logs -f <container>`.
+No model files are needed up front. On first boot the template seeds `/config/start.sh` from this repo, and that script fetches the pinned GGUFs from Hugging Face into the models share. Downloads use aria2 (8 connections per file, resuming if interrupted) with a curl fallback, and are size- and SHA-256-checked; expect roughly 100 GB per model and a long first start. Watch progress with `docker logs -f <container>`.
 
 The two templates share host port 9931 **on purpose**: only one can hold the GPU at a time. Starting the second while the first runs fails on the port bind instead of silently fighting over GTT. To switch, stop one, let the GPU release memory, then start the other.
 

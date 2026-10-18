@@ -15,7 +15,7 @@
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/deepseek-v4-flash-vulkan.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/deepseek.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --entrypoint=/bin/bash</ExtraParams>
-  <PostArgs>-c "if [ ! -s /config/start.sh ]; then curl -fsSL -o /config/start.sh https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/deepseek-v4-flash-vulkan.start.sh || { echo 'failed to seed /config/start.sh'; exit 1; }; fi; exec bash /config/start.sh"</PostArgs>
+  <PostArgs>-c "if [ ! -s /config/start.sh ]; then curl -fsSL -o /config/start.sh.tmp https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/deepseek-v4-flash-vulkan.start.sh &amp;&amp; mv /config/start.sh.tmp /config/start.sh || { rm -f /config/start.sh.tmp; echo 'failed to seed /config/start.sh'; exit 1; }; fi; exec bash /config/start.sh"</PostArgs>
   <CPUset/>
   <DateInstalled/>
   <DonateText/>
