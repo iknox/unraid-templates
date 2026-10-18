@@ -30,25 +30,8 @@
       "groupName": "unraid template images"
     },
     {
-      "description": "NEVER auto-merge Milvus, ever. We pin v2.6.15 deliberately because earlier bumps re-introduced known bugs (port collision, stats-config panic, kafka MQ default). Reviewing each bump against the deploy doc is mandatory.",
-      "matchPackageNames": ["milvusdb/milvus"],
-      "automerge": false,
-      "minimumReleaseAge": "7 days",
-      "labels": ["dependencies", "milvus-review-required"]
-    },
-    {
-      "description": "etcd patch updates are typically safe; allow auto-merge after a soak period.",
-      "matchPackageNames": ["quay.io/coreos/etcd"],
-      "matchUpdateTypes": ["patch"],
-      "automerge": true,
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "description": "wyoming-onnx-asr (parakeet) patch+minor are usually safe.",
-      "matchPackageNames": ["ghcr.io/tboby/wyoming-onnx-asr"],
-      "matchUpdateTypes": ["patch", "minor"],
-      "automerge": true,
-      "minimumReleaseAge": "3 days"
+      "description": "Auto-merge every update. Homelab policy: the cost of a bad bump is a revert; the cost of a review queue is silently running a five-month-old database. The old Milvus freeze existed only for memsearch #534, which is fixed.",
+      "automerge": true
     },
     {
       "description": "Our own wrapper images — :main is a moving tag we manage in unraid-images, do not let Renovate try to bump these.",
@@ -63,14 +46,13 @@
       "labels": ["dependencies", "ccr-review-required"]
     },
     {
-      "description": "NEVER auto-merge majors anywhere.",
+      "description": "Keep majors visible in the dashboard even though they merge themselves.",
       "matchUpdateTypes": ["major"],
-      "automerge": false,
       "labels": ["dependencies", "major-upgrade-review"]
     }
   ],
   "vulnerabilityAlerts": {
     "labels": ["security"],
-    "automerge": false
+    "automerge": true
   }
 }

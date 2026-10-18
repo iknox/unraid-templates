@@ -310,10 +310,10 @@ memsearch search "some query"
 
 All images pin explicit tags. To pick up security updates:
 
-- **Garage wrapper** (`ghcr.io/iknox/garage-env:main`) rebuilds automatically on every push to `main` in the upstream [iknox/garage-env](https://github.com/iknox/garage-env) repo. Unraid's CA update check will flag available updates; click Update in the UI to pull and recreate the container. Persisted state survives.
-- **Milvus** is pinned to `milvusdb/milvus:v2.6.15` in the template. To bump: edit the template in the Unraid UI and change the Repository tag. Note the known bugs in the Troubleshooting appendix before upgrading major versions.
-- **etcd** is pinned to `quay.io/coreos/etcd:v3.6.11`. Rare need to upgrade.
-- **claude-code-router** is pinned to `musistudio/claude-code-router:2.0.0`. Schema mutates between releases — eyeball the release notes against `config-examples/claude-code-router.config.json` before bumping. Renovate raises a PR but never auto-merges; review each one.
+- **Garage wrapper** (`ghcr.io/iknox/garage-env:main`) rebuilds automatically on every push to `main` in [iknox/unraid-images](https://github.com/iknox/unraid-images) (`garage-env/Dockerfile`). Unraid's CA update check will flag available updates; click Update in the UI to pull and recreate the container. Persisted state survives — but take a backup first on a major Garage bump, since the metadata DB may be migrated in place.
+- **Milvus** is pinned to `milvusdb/milvus:v3.0.3`. Bumps are image-tag-only (no data migration step), but read [MIGRATIONS.md](MIGRATIONS.md) first: keep Storage V3 (Loon) off, chown the data dir to `999:999`, and roll back by restoring backups rather than retagging.
+- **etcd** is pinned to `quay.io/coreos/etcd:v3.7.2`. Milvus 3.0 requires **≥ 3.6.11**; the 3.7 line needs no `--experimental-*` flags.
+- **claude-code-router** is pinned to `musistudio/claude-code-router:2.0.0`. Schema mutates between releases — eyeball the release notes against `config-examples/claude-code-router.config.json` before bumping. Renovate raises a PR but never auto-merges; review each one. (Retired — see the Local AI stack note.)
 - **llama-swap** uses `:vulkan` (a moving tag rebuilt by upstream as new llama.cpp releases land). To pick up a new llama.cpp build, click Update in the Unraid UI; container restarts with the new image. Edits to your `config.yaml` survive (volume-mounted).
 
 ### Resetting the stack
@@ -371,22 +371,13 @@ uv tool install 'memsearch[onnx]'
 
 This puts memsearch at `~/.local/share/uv/tools/memsearch/` (stable across sessions) and on your `$PATH` as `~/.local/bin/memsearch`. The Claude Code plugin's hooks prefer PATH-discovered memsearch over their `uvx --from ...` fallback, so SessionStart is faster and the patch below sticks.
 
-### Flush patch (required for remote Milvus)
+### No patch needed on memsearch ≥ 0.4.21
 
-As of memsearch 0.4.2, there's an upstream bug ([#534](https://github.com/zilliztech/memsearch/issues/534)) where `MilvusStore.upsert()` never calls `flush()`. Milvus Lite auto-flushes; remote Milvus 2.5+ does not. Without the patch, indexed chunks report "upserted" but are invisible to subsequent searches.
+Older versions had an upstream bug ([#534](https://github.com/zilliztech/memsearch/issues/534)) where `MilvusStore.upsert()` never called `flush()`. Milvus Lite auto-flushes; remote Milvus 2.5+ did not, so indexed chunks reported "upserted" but were invisible to subsequent searches. The old workaround was a one-line `self._client.flush(...)` patch applied by hand after every upgrade.
 
-Patch in `~/.local/share/uv/tools/memsearch/lib/python3.12/site-packages/memsearch/store.py`, inside `MilvusStore.upsert()`:
+That is obsolete. The fix landed upstream in [PR #757](https://github.com/zilliztech/memsearch/pull/757) (released in 0.4.21) and works differently: the store counts newly written rows and sets `consistency_level="Strong"` on searches, so results are visible without an explicit flush. **Do not re-apply the old flush patch** — it fights the new logic and slows every upsert. If you still see empty results on a remote Milvus, upgrade memsearch and check `memsearch --version` before touching `store.py`.
 
-```python
-result = self._client.upsert(
-    collection_name=self._collection,
-    data=chunks,
-)
-self._client.flush(self._collection)   # ← add this line
-return result.get(...)
-```
-
-The patch needs reapplying after `uv tool upgrade memsearch` until upstream merges the fix.
+Verified 2026-10-18 on the Castle stack: index → immediate search returns score 1.0000.
 
 ### Configuring for remote Milvus
 
@@ -418,23 +409,23 @@ Gotchas we hit and solved:
 - **Milvus's `minio.region` must match Garage's `s3_region`.** AWS SigV4 signs the region into the request; a mismatch produces a cryptic `AuthorizationHeaderMalformed`. Both sides default to `garage` in our templates.
 - **`docker exec garage /garage ...` fails with "Invalid RPC secret provided (wrong length)".** Docker exec inherits the container's `Config.Env` — which has empty `GARAGE_RPC_SECRET=` from the template form — and that empty value beats the config file. The garage-env wrapper installs `/usr/local/bin/garage` which `unset`s the env vars and reads from `--rpc-secret-file`. Hence `docker exec garage garage ...` (note: no leading slash) works.
 
-### Milvus 2.6.x startup gotchas
+### Milvus startup gotchas (2.6.x → 3.0.x)
 
-Milvus Standalone 2.6.x has several sharp edges that silently break startup on a fresh install:
+These bit us on 2.6.x. As of **3.0.3** the shipped `configs/milvus.yaml` defaults match what we pin, so most are now belt-and-braces. The template keeps them anyway — a silent startup failure is a bad trade for four lines of XML.
 
-1. **mq.type defaults to kafka.** Standalone expects `rocksmq`. If kafka is set (e.g. from a stale etcd value), Milvus tries `localhost:9092`, can't connect, and dies silently after its init phase. The template pins `MQ_TYPE=rocksmq`.
+1. **mq.type defaults to kafka.** Standalone expects `rocksmq`. If kafka is set (e.g. from a stale etcd value), Milvus tries `localhost:9092`, can't connect, and dies silently after its init phase. The template pins `MQ_TYPE=rocksmq` — still the one override worth keeping.
 
-2. **localStorage.path defaults to empty.** QueryNode then does `mkdir ""` and FATALs with `no such file or directory`. The template pins `LOCAL_STORAGE_PATH=/var/lib/milvus/data`.
+2. **localStorage.path defaults to empty.** QueryNode then does `mkdir ""` and FATALs with `no such file or directory`. The template pins `LOCAL_STORAGE_PATH=/var/lib/milvus/data`; 3.0.3 now defaults to `/var/lib/milvus/data/`.
 
-3. **Stats-config validator panic.** On hosts with a lot of RAM, Milvus's `minSizeFromIdleToSealed` calculation resolves to 0, which a 2.6.x validator rejects at startup. The panic log message is misleading — it prints the (correct) HWM/LWM values as if *they* were the issue. The template pins `DATA_COORD_SEGMENT_MIN_SIZE_FROM_IDLE_TO_SEALED=16`.
+3. **Stats-config validator panic.** On hosts with a lot of RAM, Milvus's `minSizeFromIdleToSealed` calculation resolves to 0, which the 2.6.x validator rejected at startup. The panic log message is misleading — it prints the (correct) HWM/LWM values as if *they* were the issue. The template pins `DATA_COORD_SEGMENT_MIN_SIZE_FROM_IDLE_TO_SEALED=16`; that is the 3.0.3 default too.
 
-4. **Port collision between MixCoord and Proxy.** In 2.6, RootCoord was consolidated into MixCoord, which binds `rootCoord.port`. If the default resolves to `19530` (Proxy's external port), you get an infinite restart loop with `listen tcp :19530: bind: address already in use`. The template pins `PROXY_PORT=19530` and `ROOT_COORD_PORT=22125`.
+4. **Port collision between MixCoord and Proxy.** In 2.6, RootCoord was consolidated into MixCoord, which binds `rootCoord.port`. If the default resolves to `19530` (Proxy's external port), you get an infinite restart loop with `listen tcp :19530: bind: address already in use`. The template pins `PROXY_PORT=19530` and `ROOT_COORD_PORT=22125`; 3.0.3 defaults to 22125.
 
-All four fixes are baked into the Milvus template's env-var defaults; you don't need to touch them unless you're adapting for a different Milvus version.
+5. **3.0 runs as a non-root user.** The image's `Config.User` is `999:999`. On Unraid, `chown -R 999:999 /mnt/user/appdata/milvus/data` once before the first 3.x start, or the container loops on permission errors.
 
 ### Why env vars instead of milvus.yaml
 
-The earlier version of this stack mounted a `milvus.yaml` file from `/mnt/user/appdata/milvus/configs/`. This required users to manually copy a starter file, edit the Garage key fields, and keep the file in sync with template defaults. Replaced with Unraid template env-var fields after we verified all ~25 yaml keys have env-var overrides in Milvus 2.6. Upper-snake-case of the dotted yaml path works (e.g. `minio.accessKeyID` → `MINIO_ACCESS_KEY_ID`).
+The earlier version of this stack mounted a `milvus.yaml` file from `/mnt/user/appdata/milvus/configs/`. This required users to manually copy a starter file, edit the Garage key fields, and keep the file in sync with template defaults. Replaced with Unraid template env-var fields after we verified all ~25 yaml keys have env-var overrides in Milvus 2.6 (still true in 3.0). Upper-snake-case of the dotted yaml path works (e.g. `minio.accessKeyID` → `MINIO_ACCESS_KEY_ID`).
 
 ### Why `/mnt/user/appdata` not `/mnt/cache/appdata`
 
@@ -448,11 +439,11 @@ The directory under `/boot/config/plugins/community.applications/private/` must 
 
 Unraid's `<Network>` XML field expects one of: `bridge`, `host`, `none`, or the name of a Docker network that already exists on the host *and* has been registered in Unraid's known-networks list. Putting a custom network name like `local-ai` directly in `<Network>` silently makes the Install button a no-op — CA's form builder can't resolve the dropdown option. The working pattern is `<Network>bridge</Network>` + `<ExtraParams>--network=local-ai</ExtraParams>`, which is what these templates use.
 
-### memsearch issue #534
+### memsearch issue #534 (fixed upstream)
 
-Discovered after standing up the remote Milvus and finding zero search results despite "successfully indexed" logs. Milvus returned `collection not found` on subsequent queries; the upsert had buffered but never flushed. Milvus Lite masked the bug by auto-flushing. Fix is a one-line patch to `store.py` (see [memsearch Claude Code plugin notes](#memsearch-claude-code-plugin-notes)).
+Discovered after standing up the remote Milvus and finding zero search results despite "successfully indexed" logs. Milvus returned `collection not found` on subsequent queries; the upsert had buffered but never flushed. Milvus Lite masked the bug by auto-flushing.
 
-Upstream bug is open at time of writing: https://github.com/zilliztech/memsearch/issues/534
+Fixed in [PR #757](https://github.com/zilliztech/memsearch/pull/757), released in **memsearch 0.4.21**. The fix is not a flush call — it counts newly written rows and queries with `consistency_level="Strong"`. See [No patch needed on memsearch ≥ 0.4.21](#no-patch-needed-on-memsearch--0421); do not re-apply the old `store.py` patch.
 
 ### Useful diagnostic commands
 
