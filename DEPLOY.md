@@ -43,7 +43,7 @@ For the standalone service docs, see [README.md](README.md).
 ## Prerequisites
 
 - Unraid 6.12+ with Community Applications plugin installed.
-- For **memsearch**: ~2 GB free RAM, ~1 GB storage (plus your corpus). `memsearch` installed on the client; see [memsearch README](https://github.com/zilliztech/memsearch) and the Claude Code plugin notes below.
+- For **memsearch**: ~2 GB free RAM, ~1 GB storage (plus your corpus). `memsearch` installed on the client; see [memsearch README](https://github.com/zilliztech/memsearch) and the OpenCode plugin notes below.
 - For **Local AI**: a GPU that llama.cpp can target (Vulkan on AMD/Intel, ROCm on supported AMD, CUDA on NVIDIA), ~120 GB free disk for the daily-driver model, and enough GPU-addressable memory for the model you pick. Any OpenAI-compatible client on the workstation.
 
 ---
@@ -240,13 +240,13 @@ Expect `OK`.
 
 ## Point memsearch at the backend
 
-On your workstation (assumes `memsearch` is already installed as a uv tool — see the [memsearch Claude Code plugin notes](#memsearch-claude-code-plugin-notes) section below if not):
+On your workstation (assumes `memsearch` is already installed as a uv tool — see the [memsearch OpenCode plugin notes](#memsearch-opencode-plugin-notes) section below if not):
 
 ```bash
 memsearch config set milvus.uri http://UNRAID-IP:19530
 ```
 
-Restart Claude Code if you use the plugin. The SessionStart hook now indexes to the remote Milvus instead of the local `.db` file.
+Restart OpenCode if you use the plugin. Its next session indexes to the remote Milvus instead of a local `.db` file.
 
 Verify end-to-end:
 
@@ -307,9 +307,9 @@ Practical backup approach: snapshot or rsync `/mnt/user/appdata/garage/` regular
 
 ---
 
-## memsearch Claude Code plugin notes
+## memsearch OpenCode plugin notes
 
-If you're using memsearch via the Claude Code plugin rather than the standalone CLI:
+If you're using memsearch via the OpenCode plugin rather than the standalone CLI:
 
 ### Recommended install path
 
@@ -321,7 +321,15 @@ uv tool uninstall memsearch 2>/dev/null
 uv tool install 'memsearch[onnx]'
 ```
 
-This puts memsearch at `~/.local/share/uv/tools/memsearch/` (stable across sessions) and on your `$PATH` as `~/.local/bin/memsearch`. The Claude Code plugin's hooks prefer PATH-discovered memsearch over their `uvx --from ...` fallback, so SessionStart is faster and the patch below sticks.
+This puts memsearch at `~/.local/share/uv/tools/memsearch/` (stable across sessions) and on your `$PATH` as `~/.local/bin/memsearch`. Install it as a persistent uv tool so the plugin and your shell resolve the same version; an ephemeral `uvx` cache is easy to lose between sessions.
+
+Then enable the plugin in `~/.config/opencode/opencode.jsonc`:
+
+```json
+{
+  "plugin": ["@zilliz/memsearch-opencode"]
+}
+```
 
 ### No patch needed on memsearch ≥ 0.4.21
 
@@ -338,7 +346,7 @@ memsearch config set milvus.uri http://UNRAID-IP:19530
 memsearch config set embedding.provider onnx   # default local ONNX bge-m3-int8
 ```
 
-Config lands in `~/.memsearch/config.toml`. The plugin's SessionStart hook picks it up automatically on next Claude Code launch.
+Config lands in `~/.memsearch/config.toml`. The plugin reads it on the next OpenCode session.
 
 ---
 
