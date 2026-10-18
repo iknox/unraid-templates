@@ -140,6 +140,19 @@ docker logs llama-swap --tail 20 2>&1 | grep -E "prompt eval|cache_n"
 
 First turn cold-loads the model (~30-60s). Later turns should respond in seconds, and `cache_n` should increase turn-over-turn as llama.cpp reuses the prompt cache.
 
+### Single-model servers (A/B pair)
+
+Two templates replace the old EngramHalo server and serve one model each. They **share host port 9931**, so exactly one can run at a time:
+
+| Template | Backend | Model |
+|---|---|---|
+| `qwen38-flash-next-gufo` | ROCm 10.0 / Gufo (needs `/dev/kfd`) | Qwen3.8-Flash-Next UD-Q4_K_XL + shared MTP Q8_0 head |
+| `deepseek-v4-flash-vulkan` | Vulkan RADV (needs `/dev/dri` only) | DeepSeek V4 Flash 0731 UD-IQ2_XXS + dspark Q8_0 |
+
+Both seed `/config/start.sh` from this repo on first boot; edit that file (not env vars) and restart to change model, context, or speculation. To switch: stop one, confirm the GPU has released GTT (`radeontop` or watch free memory settle), then start the other. Starting both will fail on the port bind, by design.
+
+Install them through **Apps → Private Apps** like the other templates.
+
 ---
 
 ## Stack: memsearch backend (Garage + etcd + Milvus)

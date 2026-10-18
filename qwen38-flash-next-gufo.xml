@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>qwen38-flash-next-gufo</Name>
+  <Repository>docker.io/kyuz0/amd-strix-halo-toolboxes:rocm-10.0-gufo</Repository>
+  <Registry>https://hub.docker.com/r/kyuz0/amd-strix-halo-toolboxes</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/kyuz0/amd-strix-halo-toolboxes</Project>
+  <Overview>Qwen3.8-Flash-Next (125B MoE, 6B active) served by Gufo on AMD Strix Halo (gfx1151) via ROCm 10.0.&#xD;[br]Gufo is the purpose-built Flash-Next server from the kyuz0 toolbox: MTP speculative decoding with a 7-token draft window, 133K context in one session, and an OpenAI-compatible API on :8080. Weights are the UD-Q4_K_XL 4-shard set plus the shared Q8_0 MTP head.&#xD;[br]Runtime config lives in /config/start.sh (seeded from the repo on first boot — edit it there to change model, context, sessions, or draft depth). No container environment variables are used.&#xD;[br]Host tuning required: syslinux append amdgpu.gttsize=117760 amdgpu.no_system_mem_limit=1 ttm.pages_limit=24576000, BIOS UMA Frame Buffer Size 512M.&#xD;[br]This is the ROCm half of the A/B pair: it needs /dev/kfd and only one of this container or deepseek-v4-flash-vulkan can hold the GPU at a time. Stop one before starting the other and give the driver a moment to release GTT. Thinking mode is on by default; allow generous max_tokens in clients.</Overview>
+  <Category>Tools: Productivity: AI:</Category>
+  <WebUI>http://[IP]:[PORT:9931]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/qwen38-flash-next-gufo.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/qwen.png</Icon>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --device=/dev/kfd --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --ipc=host --entrypoint=/bin/bash</ExtraParams>
+  <PostArgs>-c "if [ ! -s /config/start.sh ]; then curl -fsSL -o /config/start.sh https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/qwen38-flash-next-gufo.start.sh || { echo 'failed to seed /config/start.sh'; exit 1; }; fi; exec bash /config/start.sh"</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Strix Halo-only (gfx1151) Gufo server for the UD-Q4_K_XL shards. Host port 9931 maps to the server's 8080. Configure via /config/start.sh on the appdata share — no env vars. Requires the GTT/VRAM host tuning documented in DEPLOY.md.</Description>
+  <Config Name="HTTP / API" Target="8080" Default="9931" Mode="tcp" Description="OpenAI-compatible API and WebUI. Gufo listens on 8080 inside the container; host 9931 is llama.cpp's announced future default." Type="Port" Display="always" Required="true" Mask="false">9931</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files. Expects Qwen3.8-Flash-Next-UD-Q4_K_XL/ (4 shards, mmproj, shared Q8_0 MTP head)." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
+  <Config Name="Runtime config" Target="/config" Default="/mnt/user/appdata/qwen38-flash-next-gufo" Mode="rw" Description="Holds start.sh — the gufo serve command line (model, MTP head, context, sessions, draft depth). Seeded automatically on first boot; edit and restart to apply." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/qwen38-flash-next-gufo</Config>
+</Container>
