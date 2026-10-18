@@ -83,6 +83,20 @@ Probably already done, but confirm: Unraid webUI → **Shares** → `appdata` �
 
 If you don't have a cache pool yet, put everything on the array. You can reconfigure later without changing any container settings.
 
+### 4. Kernel tuning (Strix Halo only)
+
+The local-LLM templates assume the iGPU can see a large GTT window. Add this to the default **Unraid OS** entry in `/boot/syslinux/syslinux.cfg`, leaving the rest of the file unchanged:
+
+```
+append initrd=/bzroot amdgpu.gttsize=126976 amdgpu.no_system_mem_limit=1 ttm.pages_limit=32505856 amd_iommu=off
+```
+
+- `126976` MiB of GTT is 124 GiB; `ttm.pages_limit=32505856` is the same cap in 4 KiB pages.
+- Set BIOS **UMA Frame Buffer Size** to 512M — GTT is the real budget.
+- If you run ZFS, cap ARC so it does not compete with the GPU. On a 96 GB box we use 19.2 GiB: `echo 'options zfs zfs_arc_max=20615843020' > /boot/config/modprobe.d/zfs.conf`.
+
+Reboot after editing, then verify with `cat /proc/cmdline`.
+
 ---
 
 ## Stack: Local AI (Qwen / DeepSeek)
