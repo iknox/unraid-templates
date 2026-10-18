@@ -30,7 +30,7 @@
       "groupName": "unraid template images"
     },
     {
-      "description": "Auto-merge every update. Homelab policy: the cost of a bad bump is a revert; the cost of a review queue is silently running a five-month-old database. The old Milvus freeze existed only for memsearch #534, which is fixed.",
+      "description": "Auto-merge every update. Homelab policy: the cost of a bad bump is a revert; the cost of a review queue is silently running an outdated database.",
       "automerge": true
     },
     {

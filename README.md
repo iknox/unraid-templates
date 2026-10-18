@@ -24,4 +24,4 @@ git clone https://github.com/iknox/unraid-templates.git iknox-templates
 
 Refresh the Apps page; templates appear under **Private Apps**.
 
-For the full backend deploy walkthrough see [DEPLOY.md](DEPLOY.md). When reviewing automated dependency PRs, see [MIGRATIONS.md](MIGRATIONS.md).
+For the full backend deploy walkthrough see [DEPLOY.md](DEPLOY.md). When reviewing automated dependency PRs, see [UPGRADING.md](UPGRADING.md).
