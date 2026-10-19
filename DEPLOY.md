@@ -155,6 +155,7 @@ Apps → **Private Apps** → **garage** → Install. Defaults are sane:
 
 - S3 API: `3900` (only needed if external S3 clients will use this)
 - Admin API: `3903`
+- Web UI: `3909` (embedded admin UI — buckets, keys, cluster status, object browser; trusted-LAN only)
 - Metadata: `/mnt/user/appdata/garage/meta`
 - Data: `/mnt/user/appdata/garage/data`
 - `GARAGE_S3_REGION=garage` (must match what Milvus expects)
@@ -182,6 +183,8 @@ docker exec garage garage key info --show-secret milvus-key
 ```
 
 Copy the `Key ID` (starts with `GK`) and `Secret key` (64 hex chars) from the last command's output. You'll paste them into the Milvus install form next.
+
+The secret is re-printable at any time with that last command — nothing must be captured at creation time. (The web UI shows the Key ID under Buckets but never the secret.)
 
 The `garage` CLI here is a wrapper we install inside the image that auto-injects `--rpc-secret-file` so the commands work via `docker exec` without env-var juggling.
 
