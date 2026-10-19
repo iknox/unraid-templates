@@ -9,9 +9,9 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/iknox/unraid-templates/issues</Support>
   <Project>https://garagehq.deuxfleurs.fr/</Project>
-  <Overview>S3-compatible object storage — a lightweight MinIO alternative built for geo-distributed and single-node deployments alike. This image wraps upstream Garage v2.3.0 with env-var config (no TOML to edit) and auto-generates its three secrets plus the v2 cluster layout on first boot.&#xD;[br]See the repo README for the bucket-and-key bootstrap command sequence used when pairing with Milvus.</Overview>
+  <Overview>S3-compatible object storage — a lightweight MinIO alternative built for geo-distributed and single-node deployments alike. This image wraps upstream Garage v2.4.1 with env-var config (no TOML to edit) and auto-generates its three secrets plus the v2 cluster layout on first boot.&#xD;[br]Ships an embedded web UI (port 3909): buckets, keys, cluster status and an object browser, reading the generated config in-container.&#xD;[br]See the repo README for the bucket-and-key bootstrap command sequence used when pairing with Milvus.</Overview>
   <Category>Tools: Storage:</Category>
-  <WebUI>http://[IP]:[PORT:3903]/health</WebUI>
+  <WebUI>http://[IP]:[PORT:3909]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/garage.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/iknox/unraid-templates/main/img/garage.png</Icon>
   <ExtraParams>--restart=unless-stopped --network=local-ai</ExtraParams>
@@ -20,14 +20,17 @@
   <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Garage is a lightweight, efficient, S3-compatible object store. This template uses ghcr.io/iknox/garage-env, an env-configurable wrapper around upstream Garage v2.3.0 that also ships a `garage` CLI wrapper so `docker exec garage garage ...` works without env-var juggling.</Description>
+  <Description>Garage is a lightweight, efficient, S3-compatible object store. This template uses ghcr.io/iknox/garage-env, an env-configurable wrapper around upstream Garage v2.4.1 that also ships a `garage` CLI wrapper so `docker exec garage garage ...` works without env-var juggling, plus an embedded garage-webui admin UI.</Description>
   <Config Name="S3 API" Target="3900" Default="3900" Mode="tcp" Description="S3-compatible HTTP API. Expose to LAN if you want external S3 clients." Type="Port" Display="always" Required="true" Mask="false">3900</Config>
   <Config Name="Admin API" Target="3903" Default="3903" Mode="tcp" Description="Admin HTTP API — health checks and metrics." Type="Port" Display="advanced" Required="false" Mask="false">3903</Config>
+  <Config Name="Web UI" Target="3909" Default="3909" Mode="tcp" Description="Embedded garage-webui: buckets, keys, cluster status, object browser. Trusted LAN only — set AUTH_USER_PASS before exposing it further." Type="Port" Display="always" Required="false" Mask="false">3909</Config>
   <Config Name="Metadata" Target="/var/lib/garage/meta" Default="/mnt/user/appdata/garage/meta" Mode="rw" Description="Metadata dir. Prefer a cache pool / SSD for performance. Secrets persist here as .garage-env-secrets." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/garage/meta</Config>
   <Config Name="Data" Target="/var/lib/garage/data" Default="/mnt/user/appdata/garage/data" Mode="rw" Description="Bulk data dir. Array storage is fine." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/garage/data</Config>
   <Config Name="GARAGE_S3_REGION" Target="GARAGE_S3_REGION" Default="garage" Description="S3 region string. S3 clients must be configured with the same region." Type="Variable" Display="advanced" Required="true" Mask="false">garage</Config>
   <Config Name="GARAGE_DB_ENGINE" Target="GARAGE_DB_ENGINE" Default="sqlite" Description="Metadata DB engine: sqlite (default) or lmdb." Type="Variable" Display="advanced" Required="false" Mask="false">sqlite</Config>
   <Config Name="GARAGE_REPLICATION_FACTOR" Target="GARAGE_REPLICATION_FACTOR" Default="1" Description="1 for single-node deployments." Type="Variable" Display="advanced" Required="true" Mask="false">1</Config>
+  <Config Name="GARAGE_WEBUI" Target="GARAGE_WEBUI" Default="1" Description="Embedded web UI: 1 (default) enables, 0 disables." Type="Variable" Display="advanced" Required="false" Mask="false">1</Config>
+  <Config Name="AUTH_USER_PASS" Target="AUTH_USER_PASS" Default="" Description="Optional web UI login as 'user:&lt;bcrypt&gt;'. Blank means no login — only acceptable on a trusted LAN." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="GARAGE_RPC_SECRET" Target="GARAGE_RPC_SECRET" Default="" Description="Leave blank to auto-generate on first boot." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="GARAGE_ADMIN_TOKEN" Target="GARAGE_ADMIN_TOKEN" Default="" Description="Leave blank to auto-generate on first boot." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="GARAGE_METRICS_TOKEN" Target="GARAGE_METRICS_TOKEN" Default="" Description="Leave blank to auto-generate on first boot." Type="Variable" Display="advanced" Required="false" Mask="true"/>
