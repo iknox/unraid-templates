@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>PlexMediaServer</Name>
+  <Repository>plexinc/pms-docker:latest</Repository>
+  <Registry>https://hub.docker.com/r/plexinc/pms-docker</Registry>
+  <Network>host</Network>
+  <MyIP/>
+  <MyMAC/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://github.com/plexinc/pms-docker</Project>
+  <ReadMe/>
+  <Overview>Plex Media Server, running on the host network so it advertises its real LAN address to clients and Chromecasts.&#13;
+IMPORTANT - the container-side paths below are load bearing. Plex stores every library location inside its own database (section_locations in com.plexapp.plugins.library.db), so /video/TV, /video/movies, /video/Misc, /video/Concerts, /music and /audiobooks must stay exactly as they are or every existing library reference, watch state and marker is orphaned. These paths came from the previous server unchanged for exactly that reason. Do not "tidy" them into a single /data mount.&#13;
+/config is the application database and Preferences; /transcode is scratch space. Both live on the array under appdata, so a container recreate keeps sign-in, plugins and library metadata.&#13;
+PLEX_UID and PLEX_GID are 99 and 100 (nobody and users on Unraid) so the server can read the user shares. The media shares must therefore be group-readable; if Plex reports a library as empty, check share access before touching this template.&#13;
+No ports are published because the container uses the host network stack. The Web UI is on port 32400 and claim-based sign-in happens through the Plex website.</Overview>
+  <Category>MediaServer:Video MediaServer:Music MediaServer:Photos</Category>
+  <WebUI>http://[IP]:[PORT:32400]/web</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/plexmediaserver.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/plexinc/pms-docker/master/img/plex-server.png</Icon>
+  <ExtraParams>--restart=unless-stopped</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled>1794446100</DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+  <Config Name="App data" Target="/config" Default="/mnt/user/appdata/PlexMediaServer" Mode="rw" Description="Application database, Preferences.xml, plugins and logs. Losing this means signing in again and re-scanning everything." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/PlexMediaServer</Config>
+  <Config Name="Transcode" Target="/transcode" Default="/mnt/user/appdata/PlexMediaServer/transcode" Mode="rw" Description="Transcode scratch space. Kept separate from /config so it can be moved to RAM-backed storage later without touching the database." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/PlexMediaServer/transcode</Config>
+  <Config Name="Plex data" Target="/data" Default="/mnt/user/appdata/PlexMediaServer/data" Mode="rw" Description="Secondary image cache the upstream image expects at /data." Type="Path" Display="advanced" Required="false" Mask="false">/mnt/user/appdata/PlexMediaServer/data</Config>
+  <Config Name="TV" Target="/video/TV" Default="/mnt/user/Video/TV" Mode="rw" Description="Sonarr's output. Path is recorded in the library database - changing it orphans the TV section." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Video/TV</Config>
+  <Config Name="Movies" Target="/video/movies" Default="/mnt/user/Video/Movies" Mode="rw" Description="Feature films. Path is recorded in the library database." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Video/Movies</Config>
+  <Config Name="Misc" Target="/video/Misc" Default="/mnt/user/Video/Misc" Mode="rw" Description="Everything video that is neither TV nor film. Path is recorded in the library database." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Video/Misc</Config>
+  <Config Name="Concerts" Target="/video/Concerts" Default="/mnt/user/Video/Concerts" Mode="rw" Description="Concert footage. Path is recorded in the library database." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Video/Concerts</Config>
+  <Config Name="Music" Target="/music" Default="/mnt/user/Music" Mode="rw" Description="Shared with Music Assistant, which mounts the same directory at /local_music. Path is recorded in the library database." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Music</Config>
+  <Config Name="Audiobooks" Target="/audiobooks" Default="/mnt/user/Books/Audiobooks" Mode="rw" Description="Audiobook collection. Path is recorded in the library database." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/Books/Audiobooks</Config>
+  <Config Name="PLEX_UID" Target="PLEX_UID" Default="99" Mode="" Description="User the server runs as. 99 is Unraid's nobody, which is what the user shares are readable by." Type="Variable" Display="always" Required="true" Mask="false">99</Config>
+  <Config Name="PLEX_GID" Target="PLEX_GID" Default="100" Mode="" Description="Group the server runs as. 100 is Unraid's users." Type="Variable" Display="always" Required="true" Mask="false">100</Config>
+  <Config Name="CHANGE_CONFIG_DIR_OWNERSHIP" Target="CHANGE_CONFIG_DIR_OWNERSHIP" Default="true" Mode="" Description="chowns /config to PLEX_UID and PLEX_GID on every start. Safe to set false once the appdata tree is already owned correctly - it saves a walk of the tree at boot." Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="VERSION" Target="VERSION" Default="latest" Mode="" Description="Release channel for the image: latest or public. Leave latest unless you want to pin." Type="Variable" Display="advanced" Required="false" Mask="false">latest</Config>
+  <TailscaleStateDir/>
+</Container>
