@@ -1,7 +1,7 @@
 # Minimal SearXNG settings.yml for use as an MCP search backend on a LAN.
 #
 # Diffs from upstream defaults:
-#   - search.formats includes "json" (required by mcp-searxng / GPT-Researcher /
+#   - search.formats includes "json" (required by fastCRW, GPT-Researcher and
 #     anything that wants structured search results — defaults are HTML-only)
 #   - server.bind_address: 0.0.0.0 (defaults to 127.0.0.1, won't accept
 #     traffic from the docker bridge)
