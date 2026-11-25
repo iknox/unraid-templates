@@ -18,9 +18,10 @@ For the standalone service docs, see [README.md](README.md).
 ```
   Your Mac / workstation              Unraid host (`local-ai` Docker bridge)
   ┌─────────────────────────┐         ┌────────────────────────────────────────┐
-  │ Any OpenAI client       │         │ Local AI (one at a time)               │
-  │   (OpenCode, curl,      │── HTTP ─┼─▶ qwen38-flash-next-gufo (:8080)      │
-  │    your own scripts)    │  /v1/   │   or deepseek-v4-flash-vulkan (:8080)  │
+  │ Any OpenAI client       │         │ Local AI                               │
+  │   (OpenCode, curl,      │── HTTP ─┼─▶ qwen38-flash-next-gufo (:9931)      │
+  │    your own scripts)    │  /v1/   │   deepseek-v4-flash-vulkan (:9931)     │
+  │                         │         │   bonsai-prism-vulkan (:9932)          │
   │                         │         │                                        │
   │   └─ memsearch plugin ──┼── gRPC ─┼─▶ milvus (:19530, :9091)               │
   │       (SessionStart     │ 19530   │     ├─ etcd (:2379)                    │
@@ -29,7 +30,8 @@ For the standalone service docs, see [README.md](README.md).
 ```
 
 **Local AI stack:**
-- **qwen38-flash-next-gufo** runs Qwen3.8-Flash-Next on ROCm/Gufo; **deepseek-v4-flash-vulkan** runs DeepSeek V4 Flash on Vulkan. They share host port 9931, so one runs at a time. Clients only need `http://UNRAID-IP:9931/v1`.
+- **qwen38-flash-next-gufo** runs Qwen3.8-Flash-Next on ROCm/Gufo; **deepseek-v4-flash-vulkan** runs DeepSeek V4 Flash on Vulkan. They share host port 9931, so one runs at a time.
+- **bonsai-prism-vulkan** runs Ternary Bonsai 2.5 27B on PrismML llama.cpp Vulkan. It defaults to host port 9932 and is footprint-oriented (PTQ1_0-mtp, ~6 GB). It can coexist with other models only if unified memory allows; on 128 GB Strix Halo, test with large models stopped first. Clients point at `http://UNRAID-IP:<port>/v1`.
 
 **memsearch backend:**
 - **Garage** holds the actual vector chunk bytes (objects in an S3 bucket).
@@ -99,51 +101,55 @@ Reboot after editing, then verify with `cat /proc/cmdline`.
 
 ---
 
-## Stack: Local AI (Qwen / DeepSeek)
+## Stack: Local AI (Qwen / DeepSeek / Bonsai)
 
 Skip this section if you only want memsearch.
 
-What you get: an OpenAI-compatible endpoint at `http://UNRAID-IP:9931/v1`. Two templates serve one model each:
+What you get: OpenAI-compatible endpoints at `http://UNRAID-IP:<port>/v1`.
 
-| Template | Backend | Model |
-|---|---|---|
-| `qwen38-flash-next-gufo` | ROCm 10.0 / Gufo (needs `/dev/kfd`) | Qwen3.8-Flash-Next UD-Q4_K_XL + shared MTP Q8_0 head |
-| `deepseek-v4-flash-vulkan` | Vulkan RADV (needs `/dev/dri` only) | DeepSeek V4 Flash 0731 UD-IQ2_XXS + dspark Q8_0 |
+| Template | Backend | Default port | Model | Notes |
+|---|---|---:|---|---|
+| `qwen38-flash-next-gufo` | ROCm 10.0 / Gufo (`/dev/kfd`) | 9931 | Qwen3.8-Flash-Next UD-Q4_K_XL + shared MTP Q8_0 head | Large daily-driver; shares 9931 A/B slot with DeepSeek |
+| `deepseek-v4-flash-vulkan` | Vulkan RADV (`/dev/dri`) | 9931 | DeepSeek V4 Flash 0731 UD-IQ2_XXS + dspark Q8_0 | Shares 9931 A/B slot with Qwen |
+| `bonsai-prism-vulkan` | PrismML llama.cpp Vulkan (`/dev/dri`) | 9932 | Ternary Bonsai 2.5 27B PTQ1_0-mtp (~6 GB) | Footprint-first; good for Techo/OpenAI clients |
 
 ### Install
 
-Apps → **Private Apps** → pick a template → Install. The defaults are already correct:
+Apps → **Private Apps** → pick a template → Install. Defaults:
 
-- HTTP / API: host `9931` → container `8080`
 - Models: `/mnt/user/models`
 - Config: `/mnt/user/appdata/<container-name>`
+- HTTP / API: template default (`9931` for Qwen/DeepSeek, `9932` for Bonsai) → container `8080`
 
-No model files are needed up front. On first boot the template seeds `/config/start.sh` from this repo, and that script fetches the pinned GGUFs from Hugging Face into the models share. Downloads use aria2 (8 connections per file, resuming if interrupted) with a curl fallback, and are size- and SHA-256-checked; expect roughly 100 GB per model and a long first start. Watch progress with `docker logs -f <container>`.
+No model files are needed up front if `AUTO_DOWNLOAD=1` in the seeded `/config/start.sh` (the default for these templates). First boot fetches weights into `/mnt/user/models`. Watch progress with `docker logs -f <container>`.
 
-The two templates share host port 9931 **on purpose**: only one can hold the GPU at a time. Starting the second while the first runs fails on the port bind instead of silently fighting over GTT. To switch, stop one, let the GPU release memory, then start the other.
+**Concurrency:** Qwen and DeepSeek share host port 9931 on purpose - only one holds the big-model GPU budget at a time. Bonsai uses 9932 and is much smaller, but on 128 GB unified Strix Halo memory you still need to budget carefully when running alongside a ~87 GB Qwen load. For a clean Bonsai trial, stop large models first; then reintroduce them with small Bonsai context (`CTX=8192`, `PARALLEL=1`, q4 KV cache).
 
 ### Point a client at it
 
 ```bash
+# Qwen/DeepSeek (port 9931)
 curl -sf http://UNRAID-IP:9931/v1/models | jq -r '.data[].id'
 
-curl -sf http://UNRAID-IP:9931/v1/chat/completions \
+# Bonsai (port 9932, good for Techo/OpenAI firmware)
+curl -sf http://UNRAID-IP:9932/v1/chat/completions \
   -H 'Content-Type: application/json' \
-  -d '{"model":"Qwen3.8-Flash-Next-UD-Q4_K_XL",
-       "messages":[{"role":"user","content":"hello"}],
-       "max_tokens":512}'
+  -d '{"model":"bonsai-2.5-27b",
+       "messages":[{"role":"user","content":"Reply with one word: ready"}],
+       "max_tokens":64}'
 ```
 
-In a client (OpenCode, an editor plugin, your own script), set the base URL to `http://UNRAID-IP:9931/v1` and the model to an id from `/v1/models`. No API key is required.
+In a client, set the base URL to `http://UNRAID-IP:<port>/v1` and the model to an id from `/v1/models` (Bonsai defaults to `bonsai-2.5-27b`). No API key is required.
 
 ### What "good" looks like
 
 ```bash
 docker logs qwen38-flash-next-gufo --tail 20 2>&1 | grep -E "fetching|prompt eval|draft"
 docker logs deepseek-v4-flash-vulkan   --tail 20 2>&1 | grep -E "fetching|prompt eval|draft"
+docker logs bonsai-prism-vulkan --tail 20 2>&1 | grep -E "fetching|prompt eval|draft|mtp"
 ```
 
-First turn cold-loads the model (~30-60s). Later turns should respond in seconds.
+First turn cold-loads the model. Bonsai PTQ1_0-mtp is much smaller (~6 GB) than the big models; expect faster cold load and lower footprint, but validate output quality on your gfx1151 Vulkan stack before relying on it.
 
 ---
 
@@ -290,10 +296,11 @@ Then reinstall from Apps → Private Apps in the original order.
 **Local AI** — no inter-state:
 
 ```bash
-docker rm -f qwen38-flash-next-gufo deepseek-v4-flash-vulkan 2>/dev/null
+docker rm -f qwen38-flash-next-gufo deepseek-v4-flash-vulkan bonsai-prism-vulkan 2>/dev/null
 rm -rf /mnt/user/appdata/qwen38-flash-next-gufo/* \
-       /mnt/user/appdata/deepseek-v4-flash-vulkan/*
-# Models in /mnt/user/models/ are ~100GB each; keep them
+       /mnt/user/appdata/deepseek-v4-flash-vulkan/* \
+       /mnt/user/appdata/bonsai-prism-vulkan/*
+# Models in /mnt/user/models/ are large; keep them
 # unless you really mean to re-download.
 ```
 

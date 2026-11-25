@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>bonsai-prism-vulkan</Name>
+  <Repository>ghcr.io/iknox/bonsai-prism-vulkan:main</Repository>
+  <Registry>https://ghcr.io/iknox/bonsai-prism-vulkan</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/iknox/unraid-templates/issues</Support>
+  <Project>https://huggingface.co/prism-ml/Ternary-Bonsai-2.5-27B-GGUF</Project>
+  <Overview>Ternary Bonsai 2.5 27B served by PrismML's llama.cpp fork on AMD Strix Halo (gfx1151) via Vulkan (RADV).&#xD;[br]Default model: Ternary-Bonsai-2.5-27B-PTQ1_0-mtp.gguf (~6 GB) for smallest footprint and faster decode via the embedded MTP draft head. Exposes an OpenAI-compatible API at /v1/chat/completions (works with Techo firmware or any OpenAI client).&#xD;[br]Runtime config lives in /config/start.sh (seeded from this repo on first boot — edit it there to change model, context, KV cache, speculative settings, or extra args). No container environment variables are required.&#xD;[br]Footprint-first defaults: -c 8192, -np 1, q4_0 KV cache, flash attention, draft-mtp (n-max 3, p-min 0.1). For fast HA/Techo responses, add --reasoning-budget 0 via EXTRA_ARGS if your build supports it.&#xD;[br]Vulkan path: needs /dev/dri only (no /dev/kfd). Can run alongside ROCm containers in principle, but on 128 GB unified Strix Halo memory be careful when coexisting with large models (e.g. qwen38-flash-next-gufo uses ~87 GB). Stop large containers for a clean first trial.</Overview>
+  <Category>Tools: Productivity: AI:</Category>
+  <WebUI>http://[IP]:[PORT:9932]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/iknox/unraid-templates/main/bonsai-prism-vulkan.xml</TemplateURL>
+  <Icon>https://huggingface.co/prism-ml/Ternary-Bonsai-2.5-27B-GGUF/resolve/main/assets/bonsai-logo.svg</Icon>
+  <ExtraParams>--restart=unless-stopped --network=local-ai --device=/dev/dri --group-add=video --group-add=render --security-opt seccomp=unconfined --ulimit memlock=-1 --ipc=host --entrypoint=/bin/bash</ExtraParams>
+  <PostArgs>-c "if [ ! -s /config/start.sh ]; then curl -fsSL -o /config/start.sh.tmp https://raw.githubusercontent.com/iknox/unraid-templates/main/config-examples/bonsai-prism-vulkan.start.sh &amp;&amp; mv /config/start.sh.tmp /config/start.sh || { rm -f /config/start.sh.tmp; echo 'failed to seed /config/start.sh'; exit 1; }; fi; exec bash /config/start.sh"</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Description>Strix Halo Vulkan llama-server for Ternary Bonsai 2.5 27B PTQ1_0-mtp (PrismML fork). Host port 9932 maps to the server's 8080. Configure via /config/start.sh on the appdata share — no env vars. Requires /dev/dri; no /dev/kfd.</Description>
+  <Config Name="HTTP / API" Target="8080" Default="9932" Mode="tcp" Description="OpenAI-compatible llama-server API (WebUI at root, /v1/chat/completions for Techo/OpenAI clients)." Type="Port" Display="always" Required="true" Mask="false">9932</Config>
+  <Config Name="Models" Target="/models" Default="/mnt/user/models" Mode="rw" Description="GGUF files. Ternary-Bonsai-2.5-27B-PTQ1_0-mtp.gguf is downloaded to /models/bonsai-2.5-27b/ on first boot if AUTO_DOWNLOAD=1 in start.sh." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/models</Config>
+  <Config Name="Runtime config" Target="/config" Default="/mnt/user/appdata/bonsai-prism-vulkan" Mode="rw" Description="Holds start.sh — model path, context, KV cache, speculative decoding, and extra llama-server args. Seeded automatically on first boot; edit and restart to apply." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/bonsai-prism-vulkan</Config>
+</Container>
