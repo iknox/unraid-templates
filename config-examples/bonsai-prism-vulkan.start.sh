@@ -23,7 +23,8 @@ SPEC_DRAFT_N_MIN="${SPEC_DRAFT_N_MIN:-0}"
 SPEC_DRAFT_N_MAX="${SPEC_DRAFT_N_MAX:-3}" # Bonsai preset
 SPEC_DRAFT_P_MIN="${SPEC_DRAFT_P_MIN:-0.1}"
 SERVED_NAME="${SERVED_NAME:-bonsai-2.5-27b}"
-EXTRA_ARGS="${EXTRA_ARGS:-}"              # e.g. --reasoning-budget 0 if supported
+REASONING_BUDGET="${REASONING_BUDGET:-0}" # 0=fast/no thinking, -1=unrestricted, N>0=token budget
+EXTRA_ARGS="${EXTRA_ARGS:-}"              # extra llama-server args (e.g. --reasoning off)
 
 AUTO_DOWNLOAD="${AUTO_DOWNLOAD:-1}"
 HF_REPO="${HF_REPO:-prism-ml/Ternary-Bonsai-2.5-27B-GGUF}"
@@ -56,8 +57,12 @@ if [ -n "$SPEC_TYPE" ]; then
   SPEC_ARGS+=(--spec-type "$SPEC_TYPE" --spec-draft-n-min "$SPEC_DRAFT_N_MIN" --spec-draft-n-max "$SPEC_DRAFT_N_MAX" --spec-draft-p-min "$SPEC_DRAFT_P_MIN")
 fi
 
+REASONING_ARGS=()
+if [ -n "${REASONING_BUDGET:-}" ]; then
+  REASONING_ARGS+=(--reasoning-budget "$REASONING_BUDGET")
+fi
+
 # PrismML llama-server (OpenAI-compatible). Techo firmware can point at /v1.
-# --reasoning-budget is not present in all llama-server builds; pass via EXTRA_ARGS if supported.
 exec /app/llama-server \
   --host "$HOST" \
   --port "$PORT" \
@@ -77,4 +82,5 @@ exec /app/llama-server \
   --presence-penalty 1.5 \
   --repeat-penalty 1.0 \
   "${SPEC_ARGS[@]}" \
+  "${REASONING_ARGS[@]}" \
   $EXTRA_ARGS
